@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Sparkles, CheckCircle2, XCircle, AlertTriangle, ShieldCheck, Info, ChevronRight, Dna, HeartPulse } from 'lucide-react';
+import { Sparkles, CheckCircle2, XCircle, AlertTriangle, ShieldCheck, Info, ChevronRight, Dna, HeartPulse, Sliders, Save } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const CATEGORIES = [
   {
@@ -92,8 +93,59 @@ export default function BreedAdvisor() {
   const [activeCategory, setActiveCategory] = useState(CATEGORIES[0].id);
   const [selectedBreedIndex, setSelectedBreedIndex] = useState(0);
 
+  // Custom User Configurator State
+  const [customForm, setCustomForm] = useState({
+    species: 'INDIGENOUS_COW',
+    breedName: 'Gir Cow',
+    parity: 'MAIDEN_HEIFER',
+    weightKg: 290,
+    targetGoal: 'MAXIMIZE_FAT',
+  });
+
+  const [customResult, setCustomResult] = useState(null);
+
   const category = CATEGORIES.find(c => c.id === activeCategory) || CATEGORIES[0];
   const breed = category.breeds[selectedBreedIndex] || category.breeds[0];
+
+  const handleCustomCalculate = (e) => {
+    e.preventDefault();
+    const { species, breedName, parity, weightKg, targetGoal } = customForm;
+
+    let matchSires = [];
+    let blockedSires = [];
+
+    if (species === 'BUFFALO') {
+      matchSires = [
+        { sire: 'Murrah Grade-A Sire (NDDB Straw #MU-804)', vigor: '99% Outstanding', calfWeight: '34-36 kg', outcome: `Optimized for ${targetGoal === 'MAXIMIZE_FAT' ? '8.2% Fat Content' : '18L/day Milk Yield'}` },
+        { sire: 'Nili-Ravi Sexed Straw (90% Female)', vigor: '95% Very High', calfWeight: '32-35 kg', outcome: 'High milk yield female buffalo calf with long lactation persistence' },
+      ];
+      blockedSires = [
+        { sire: 'Cow Semen (Gir / Sahiwal / HF)', whyNot: '❌ Chromosome Mismatch: Buffaloes (50 chromosomes) vs Cattle (60 chromosomes) leads to 0% conception rate.' },
+        { sire: 'Unscreened Local Scrub Bull', whyNot: '❌ Transmission of Brucellosis disease and Silent Heat issues.' },
+      ];
+    } else if (species === 'INDIGENOUS_COW') {
+      const isLowWeightHeifer = parity === 'MAIDEN_HEIFER' && weightKg < 310;
+      matchSires = [
+        { sire: `${breedName.includes('Gir') ? 'Gir Certified A2A2 Bull' : 'Sahiwal Premium Sire'}`, vigor: '98% Excellent', calfWeight: isLowWeightHeifer ? '26-28 kg' : '29-31 kg', outcome: `Easy calving with pure A2 milk production and high heat tolerance` },
+        { sire: 'Jersey Sexed Semen Straw (Easy Calving)', vigor: '94% High', calfWeight: '27-29 kg', outcome: 'F1 Cross with 4.8% fat and smooth birth' },
+      ];
+      blockedSires = [
+        { sire: 'Pure Holstein Friesian (100% HF Heavy Sire)', whyNot: isLowWeightHeifer ? '❌ SEVERE DYSTOCIA HAZARD: Dam weight is only ' + weightKg + 'kg! Heavy HF calf (40kg+) will cause severe uterine tearing or death during delivery.' : '❌ Heat Stress Hazard: >75% HF cross calves suffer severe sunstroke and panting in Indian summers.' },
+        { sire: 'Same Father Sire Line', whyNot: '❌ Inbreeding Depression: Inbreeding reduces milk yield by 15% and increases infant calf mortality.' },
+      ];
+    } else { // CROSSBREED_COW
+      matchSires = [
+        { sire: 'HF Proven Sire (PTA Milk +850kg)', vigor: '93% Good', calfWeight: '36-39 kg', outcome: 'High-volume commercial producer (26L - 32L daily capacity)' },
+        { sire: 'Jersey Sexed Straw', vigor: '96% Excellent', calfWeight: '30-33 kg', outcome: 'Higher milk fat (4.2%) and lower feed intake requirement' },
+      ];
+      blockedSires = [
+        { sire: 'Low Merit Local Country Bull', whyNot: '❌ Genetic Merit Loss: Reduces mother\'s high milk inheritance by over 40%.' },
+      ];
+    }
+
+    setCustomResult({ matchSires, blockedSires });
+    toast.success('Custom Sire Evaluation Generated! 🧬');
+  };
 
   return (
     <div className="fade-in" style={{ maxWidth: 1100, margin: '0 auto' }}>
@@ -103,10 +155,111 @@ export default function BreedAdvisor() {
             <Sparkles size={11} /> AI Sire & Species Compatibility Engine
           </span>
         </div>
-        <h1 style={{ fontSize: 28, fontWeight: 800 }}>Livestock Category & Sire Match Guide</h1>
+        <h1 style={{ fontSize: 28, fontWeight: 800 }}>Livestock Category & Custom Sire Match Guide</h1>
         <p style={{ fontSize: 14.5, color: 'var(--color-husk-tan)', marginTop: 2 }}>
-          Select livestock category to view optimal sire matches, expected calf vigor, and dangerous mismatch warnings with genetic rationale.
+          Select standard livestock categories or configure your custom animal parameters to receive tailored sire recommendations and calf vigor forecasts.
         </p>
+      </div>
+
+      {/* CUSTOM USER ANIMAL CONFIGURATOR SECTION */}
+      <div className="glass-card" style={{ marginBottom: 32, border: '2px solid var(--color-marigold)' }}>
+        <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--color-text)', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Sliders size={22} style={{ color: 'var(--color-marigold)' }} />
+          Custom Animal Selector & Compatibility Configurator
+        </h2>
+
+        <form onSubmit={handleCustomCalculate} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+          <div className="form-group">
+            <label className="form-label">Animal Category</label>
+            <select className="select font-mono-tabular" value={customForm.species}
+              onChange={e => setCustomForm(p => ({ ...p, species: e.target.value }))}>
+              <option value="INDIGENOUS_COW">🐄 Indigenous Cow (Gir / Sahiwal)</option>
+              <option value="CROSSBREED_COW">🥛 Crossbreed Cow (HF / Jersey)</option>
+              <option value="BUFFALO">🐃 Water Buffalo (Murrah / Surti)</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Specific Breed Name</label>
+            <input type="text" className="input" placeholder="e.g. Gir, Sahiwal, Murrah"
+              value={customForm.breedName} onChange={e => setCustomForm(p => ({ ...p, breedName: e.target.value }))} />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Lactation Stage / Parity</label>
+            <select className="select" value={customForm.parity}
+              onChange={e => setCustomForm(p => ({ ...p, parity: e.target.value }))}>
+              <option value="MAIDEN_HEIFER">🐣 Maiden Heifer (1st Insemination)</option>
+              <option value="1ST_LACTATION">🥛 1st Lactation Cow</option>
+              <option value="MULTIPLE_LACTATION">🐄 2nd+ Lactation Cow</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Dam Body Weight (kg)</label>
+            <input type="number" className="input font-mono-tabular" min="200" max="700"
+              value={customForm.weightKg} onChange={e => setCustomForm(p => ({ ...p, weightKg: Number(e.target.value) }))} />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Primary Target Goal</label>
+            <select className="select" value={customForm.targetGoal}
+              onChange={e => setCustomForm(p => ({ ...p, targetGoal: e.target.value }))}>
+              <option value="MAXIMIZE_FAT">🧀 Maximize Milk Fat % (Ghee/Paneer)</option>
+              <option value="MAXIMIZE_VOLUME">🥛 Maximize Daily Milk Volume (Litres)</option>
+              <option value="PURE_A2">🛡️ Pure A2 Milk & High Disease Resistance</option>
+              <option value="EASY_CALVING">🐣 Easy Birth (Zero Calving Risk)</option>
+            </select>
+          </div>
+
+          <div className="form-group" style={{ justifyContent: 'flex-end' }}>
+            <button type="submit" className="btn btn-accent" style={{ width: '100%', height: 44 }}>
+              <Dna size={18} /> Evaluate Custom Compatibility
+            </button>
+          </div>
+        </form>
+
+        {/* CUSTOM EVALUATION RESULT DISPLAY */}
+        {customResult && (
+          <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1.5px solid var(--color-border)' }}>
+            <h3 style={{ fontSize: 17, fontWeight: 800, marginBottom: 16 }}>
+              🎯 Custom Evaluation for <span style={{ color: 'var(--color-marigold)' }}>{customForm.breedName}</span> ({customForm.weightKg} kg, {customForm.parity.replace('_',' ')})
+            </h3>
+
+            <div className="grid-2">
+              <div style={{ padding: 16, borderRadius: 14, background: 'var(--color-status-match-bg)', border: '1px solid rgba(37,107,42,0.3)' }}>
+                <h4 style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-status-match)', marginBottom: 12 }}>
+                  ✅ RECOMMENDED SIRE MATCHES
+                </h4>
+                {customResult.matchSires.map((s, i) => (
+                  <div key={i} style={{ marginBottom: 10, padding: 10, background: 'var(--color-surface)', borderRadius: 10 }}>
+                    <div style={{ fontWeight: 800, fontSize: 14 }}>{s.sire}</div>
+                    <div style={{ fontSize: 12, color: 'var(--color-husk-tan)', marginTop: 4 }}>
+                      Calf Vigor: <strong>{s.vigor}</strong> | Est Weight: <strong>{s.calfWeight}</strong>
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--color-pasture)', marginTop: 4 }}>
+                      ✨ {s.outcome}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ padding: 16, borderRadius: 14, background: 'var(--color-status-mismatch-bg)', border: '1px solid rgba(192,57,43,0.3)' }}>
+                <h4 style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-status-mismatch)', marginBottom: 12 }}>
+                  ❌ FORBIDDEN SIRES FOR THIS ANIMAL
+                </h4>
+                {customResult.blockedSires.map((u, i) => (
+                  <div key={i} style={{ marginBottom: 10, padding: 10, background: 'var(--color-surface)', borderRadius: 10 }}>
+                    <div style={{ fontWeight: 800, fontSize: 14, color: 'var(--color-status-mismatch)' }}>{u.sire}</div>
+                    <div style={{ fontSize: 12.5, color: 'var(--color-text)', marginTop: 4, lineHeight: 1.4 }}>
+                      {u.whyNot}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Species Category Tabs */}
