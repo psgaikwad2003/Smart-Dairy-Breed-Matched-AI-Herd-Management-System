@@ -10,17 +10,17 @@ const mainNav = [
 ];
 
 const herdNav = [
-  { to: '/herd',      icon: PawPrint,        label: 'My Herd' },
-  { to: '/breeding',  icon: Dna,             label: 'Breeding AI & Sires' },
+  { to: '/herd',      icon: PawPrint,        label: 'My Cattle Herd' },
+  { to: '/breeding',  icon: Dna,             label: 'Sire Match & AI' },
   { to: '/milk',      icon: Droplets,        label: 'Milk Yield Logs' },
 ];
 
 const supplyNav = [
-  { to: '/inventory', icon: FlaskConical,    label: 'Semen Inventory' },
+  { to: '/inventory', icon: FlaskConical,    label: 'Semen Straw Stock' },
 ];
 
 const insightsNav = [
-  { to: '/analytics', icon: BarChart3,       label: 'Analytics & Yield' },
+  { to: '/analytics', icon: BarChart3,       label: 'Analytics Reports' },
   { to: '/alerts',    icon: Bell,            label: 'System Alerts' },
 ];
 
@@ -38,11 +38,11 @@ export default function Sidebar({ connected, unreadCount }) {
   };
 
   const renderNavGroup = (title, items) => (
-    <div style={{ marginBottom: 18 }}>
+    <div style={{ marginBottom: 16 }}>
       {title && (
         <div style={{
           padding: '0 14px 6px',
-          fontSize: 10.5,
+          fontSize: 11,
           fontWeight: 700,
           color: 'var(--color-husk-tan)',
           textTransform: 'uppercase',
@@ -64,7 +64,7 @@ export default function Sidebar({ connected, unreadCount }) {
             textDecoration: 'none',
             position: 'relative',
           })}>
-            <Icon size={17} style={{ color: 'inherit', opacity: 0.9 }} />
+            <Icon size={18} style={{ color: 'inherit', opacity: 0.9 }} />
             <span>{label}</span>
             {label.includes('Alerts') && unreadCount > 0 && (
               <span className="badge badge-rose" style={{ marginLeft: 'auto', padding: '1px 7px', fontSize: 10 }}>
@@ -79,14 +79,14 @@ export default function Sidebar({ connected, unreadCount }) {
 
   return (
     <aside className="pro-sidebar">
-      {/* Ear-Tag Styled Brand Header */}
+      {/* Brand Header */}
       <div style={{
         padding: '20px 18px 16px',
         borderBottom: '1px solid var(--color-border)',
         display: 'flex', alignItems: 'center', gap: 12,
         background: 'rgba(47, 75, 60, 0.4)'
       }}>
-        <div className="milk-drop-frame" style={{ width: 44, height: 44, flexShrink: 0 }}>
+        <div className="milk-drop-frame" style={{ width: 42, height: 42, flexShrink: 0 }}>
           <div className="milk-drop-frame-inner" style={{ fontSize: 20 }}>
             🐄
           </div>
@@ -111,7 +111,7 @@ export default function Sidebar({ connected, unreadCount }) {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 600, color: 'var(--color-dairy-white)' }}>
             <span className={`milk-drop-dot ${connected ? 'milk-drop-full' : 'milk-drop-empty'}`} />
-            {connected ? 'Real-Time Sync' : 'Offline Mode'}
+            {connected ? 'System Ready' : 'Offline Mode'}
           </div>
           <div style={{ fontSize: 11, color: connected ? 'var(--color-marigold)' : 'var(--color-text-muted)' }}>
             {connected ? <Wifi size={14} /> : <WifiOff size={14} />}
@@ -121,15 +121,15 @@ export default function Sidebar({ connected, unreadCount }) {
 
       {/* Navigation Sections */}
       <nav style={{ flex: 1, padding: '10px 14px', overflowY: 'auto' }}>
-        {renderNavGroup('Overview', mainNav)}
+        {renderNavGroup('Daily Operations', mainNav)}
         {renderNavGroup('Herd & Breeding', herdNav)}
-        {renderNavGroup('Semen Inventory', supplyNav)}
-        {renderNavGroup('Analytics & Alerts', insightsNav)}
+        {renderNavGroup('Inventory', supplyNav)}
+        {renderNavGroup('Reports & Alerts', insightsNav)}
 
         {user?.role === 'ADMIN' && renderNavGroup('Administration', adminNav)}
       </nav>
 
-      {/* Technician / Vet Profile Footer */}
+      {/* User Profile Footer */}
       <div style={{
         padding: '14px 16px',
         borderTop: '1px solid var(--color-border)',
