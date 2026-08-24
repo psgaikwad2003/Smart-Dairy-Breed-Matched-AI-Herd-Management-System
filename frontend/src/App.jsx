@@ -15,6 +15,7 @@ import Settings from './pages/Settings';
 import FeedOptimizer from './pages/FeedOptimizer';
 import HealthTracker from './pages/HealthTracker';
 import CoopPayment from './pages/CoopPayment';
+import BreedAdvisor from './pages/BreedAdvisor';
 
 function ProtectedRoute({ children }) {
   const { user } = useAuth();
@@ -44,6 +45,7 @@ function AppRoutes() {
         <Route path="farmers"         element={<Farmers />} />
         <Route path="feed-optimizer"  element={<FeedOptimizer />} />
         <Route path="health-tracker"  element={<HealthTracker />} />
+        <Route path="breed-advisor"   element={<BreedAdvisor />} />
         <Route path="coop-payment"    element={<CoopPayment />} />
         <Route path="settings"        element={<Settings />} />
       </Route>

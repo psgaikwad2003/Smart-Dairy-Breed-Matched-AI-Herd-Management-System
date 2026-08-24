@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, PawPrint, FlaskConical, Dna, BarChart3,
   Bell, Users, LogOut, Wifi, WifiOff, Droplets, ShieldCheck,
-  Settings as SettingsIcon, Utensils, HeartPulse, IndianRupee
+  Settings as SettingsIcon, Utensils, HeartPulse, IndianRupee, BookOpen
 } from 'lucide-react';
 
 const mainNav = [
@@ -12,6 +12,7 @@ const mainNav = [
 const herdNav = [
   { to: '/herd',          icon: PawPrint,        label: 'My Cattle Herd' },
   { to: '/breeding',      icon: Dna,             label: 'Sire Match & AI' },
+  { to: '/breed-advisor', icon: BookOpen,        label: 'Breed & Category Guide' },
   { to: '/milk',          icon: Droplets,        label: 'Milk Yield Logs' },
   { to: '/coop-payment',  icon: IndianRupee,     label: 'Co-op Payment' },
   { to: '/feed-optimizer',icon: Utensils,        label: 'Feed Optimizer' },
