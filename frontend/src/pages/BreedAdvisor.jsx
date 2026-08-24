@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Sparkles, CheckCircle2, XCircle, AlertTriangle, ShieldCheck, Info, ChevronRight, Dna, HeartPulse, Sliders, Save } from 'lucide-react';
+import { Sparkles, CheckCircle2, XCircle, AlertTriangle, ShieldCheck, Info, ChevronRight, Dna, HeartPulse, Sliders } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const CATEGORIES = [
@@ -8,11 +8,11 @@ const CATEGORIES = [
     name: 'Indigenous Cows (Desi Bovine)',
     icon: '🐄',
     image: '/images/indigenous_gir_cow.png',
-    desc: 'Native Indian Zebu breeds with hump, high heat tolerance, tick resistance, and A2 milk production.',
+    desc: 'Native Indian Zebu cattle with prominent humps, dewlaps, high heat/tick resistance, and A2 Beta-Casein milk production.',
     breeds: [
       {
         name: 'Gir Cow',
-        origin: 'Gujarat (Kathiawar)',
+        origin: 'Gujarat (Kathiawar / Gir Forest)',
         fatPct: '4.8 - 5.2%',
         avgYield: '12 - 18 Litres/day',
         suitableSires: [
@@ -38,6 +38,18 @@ const CATEGORIES = [
           { sire: 'Heavy Exotic HF Straw (>85% Blood)', whyNot: '❌ Tropical Infertility & Mastitis Risk: Crossbred calves with >75% HF blood suffer high somatic cell count and repeat breeding issues in humid zones.' },
           { sire: 'Jersey Pure Bull on Maiden Heifer', whyNot: '❌ Birth Weight Disproportion: High risk of difficult delivery if heifer weight is under 280 kg.' },
         ]
+      },
+      {
+        name: 'Red Sindhi & Tharparkar',
+        origin: 'Rajasthan & Sindh',
+        fatPct: '4.6 - 5.1%',
+        avgYield: '11 - 16 Litres/day',
+        suitableSires: [
+          { sire: 'Red Sindhi Grade-A Sire Straw', vigor: '96% High', calfWeight: '26-28 kg', outcome: 'Extreme drought and heat adaptation with high fat milk' },
+        ],
+        unsuitableSires: [
+          { sire: 'Heavy HF Bull Straw', whyNot: '❌ Severe Calving Trauma: Small dam frame size cannot deliver heavy European cross calf.' },
+        ]
       }
     ]
   },
@@ -46,7 +58,7 @@ const CATEGORIES = [
     name: 'Crossbreed & Exotic Cows (HF / Jersey)',
     icon: '🥛',
     image: '/images/crossbreed_hf_cow.png',
-    desc: 'High-yielding crossbred cattle (F1/F2 HF & Jersey crosses) optimized for commercial milk production.',
+    desc: 'High-yielding commercial crossbred cows (HF Cross & Jersey Cross) designed for high daily milk volume production.',
     breeds: [
       {
         name: 'HF Crossbreed (Holstein Cross)',
@@ -61,6 +73,18 @@ const CATEGORIES = [
           { sire: 'Unproven Local Scrub Bull', whyNot: '❌ Genetic Merit Degradation: Drops daughter milk yield potential by up to 50% compared to mother.' },
           { sire: 'Pure Gir Bull on High-HF Cross', whyNot: '❌ Lactation Yield Regression: F1 back-cross results in sudden drop of milk volume from 25L to 12L.' },
         ]
+      },
+      {
+        name: 'Jersey Crossbreed',
+        origin: 'India / Jersey Island Cross',
+        fatPct: '4.2 - 4.8%',
+        avgYield: '16 - 24 Litres/day',
+        suitableSires: [
+          { sire: 'Jersey Pedigree Bull (Sexed Straw)', vigor: '97% Excellent', calfWeight: '26-29 kg', outcome: 'High milk fat content with compact body frame and easy feed efficiency' },
+        ],
+        unsuitableSires: [
+          { sire: 'Heavy HF Giant Sire Straw', whyNot: '❌ Disproportionate Calf Size: Jersey dam frame is compact; oversized HF fetus causes severe dystocia.' },
+        ]
       }
     ]
   },
@@ -69,11 +93,11 @@ const CATEGORIES = [
     name: 'Indian Water Buffaloes (Murrah / Surti)',
     icon: '🐃',
     image: '/images/murrah_buffalo.png',
-    desc: 'Black gold of Indian dairy — famous for high milk fat percentage (7-8%) ideal for ghee & paneer.',
+    desc: 'The black gold of Indian dairy farming — renowned for rich, creamy milk (7-8.5% fat) perfect for ghee, butter & paneer.',
     breeds: [
       {
         name: 'Murrah Buffalo',
-        origin: 'Haryana (Rohtak/Hisar)',
+        origin: 'Haryana (Rohtak / Hisar)',
         fatPct: '7.0 - 8.5%',
         avgYield: '14 - 22 Litres/day',
         suitableSires: [
@@ -83,6 +107,74 @@ const CATEGORIES = [
         unsuitableSires: [
           { sire: 'Cattle Cow Semen (Gir / HF / Sahiwal)', whyNot: '❌ Genetic Incompatibility: Buffaloes have 50 chromosomes; cattle have 60 chromosomes. Conception rate is 0%.' },
           { sire: 'Uncertified Local Bull Straw', whyNot: '❌ High Risk of Repeat Breeding & Silent Heat: Unscreened bulls transmit Brucellosis and Trichomoniasis.' },
+        ]
+      },
+      {
+        name: 'Jaffrabadi & Nili-Ravi',
+        origin: 'Gujarat & Punjab',
+        fatPct: '7.5 - 9.0%',
+        avgYield: '15 - 24 Litres/day',
+        suitableSires: [
+          { sire: 'Jaffrabadi Heavy Grade Sire Straw', vigor: '97% Excellent', calfWeight: '36-40 kg', outcome: 'Massive frame daughter with peak fat percentage for premium ghee manufacturing' },
+        ],
+        unsuitableSires: [
+          { sire: 'Small Breed Cow Semen', whyNot: '❌ Chromosomal Incompatibility: Interspecies fertilization impossible.' },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'DAIRY_GOAT',
+    name: 'Dairy Goats (Caprine Milk Breeds)',
+    icon: '🐐',
+    image: '/images/dairy_goat_jamnapari.png',
+    desc: 'High-value medicinal milk producers (Jamnapari, Barbari, Beetal) with easy digestion and high butterfat.',
+    breeds: [
+      {
+        name: 'Jamnapari Goat',
+        origin: 'Uttar Pradesh (Etawah / Yamuna Valley)',
+        fatPct: '4.5 - 5.5%',
+        avgYield: '2.5 - 4.5 Litres/day',
+        suitableSires: [
+          { sire: 'Jamnapari Pedigree Buck Straw (ICAR-CIRG Grade A)', vigor: '98% Excellent', kidWeight: '3.5-4.2 kg', outcome: 'Tall majestic frame daughter with high daily milk yield and medicinal quality' },
+          { sire: 'Beetal Premium Buck Straw', vigor: '95% High', kidWeight: '3.2-3.8 kg', outcome: 'Twinning potential with high lactation length' },
+        ],
+        unsuitableSires: [
+          { sire: 'Sheep / Ram Straw', whyNot: '❌ Interspecies Fertilization Failure: Goats (60 chromosomes) and Sheep (54 chromosomes) create non-viable hybrid embryos that abort early.' },
+          { sire: 'Small Barbari Buck on Large Jamnapari Doe', whyNot: '❌ Size & Frame Regression: Substantially reduces daughter height and milk udder capacity.' },
+        ]
+      },
+      {
+        name: 'Barbari & Beetal Goat',
+        origin: 'Punjab & UP',
+        fatPct: '4.2 - 5.0%',
+        avgYield: '2.0 - 3.5 Litres/day',
+        suitableSires: [
+          { sire: 'Beetal Pedigree Buck Straw', vigor: '96% High', kidWeight: '3.0-3.5 kg', outcome: 'High prolificacy (twinning & triplets) with high milk yield' },
+        ],
+        unsuitableSires: [
+          { sire: 'Cattle Cow / Bull Straw', whyNot: '❌ Total Biological Mismatch: Impossible fertilization across species.' },
+        ]
+      }
+    ]
+  },
+  {
+    id: 'DAIRY_CAMEL',
+    name: 'Dairy Camels (Desert Milk Breeds)',
+    icon: '🐪',
+    image: '/images/dairy_camel_kachchhi.png',
+    desc: 'Desert therapeutic milk producers (Kachchhi, Bikaneri) rich in insulin-like protein for diabetes management.',
+    breeds: [
+      {
+        name: 'Kachchhi & Bikaneri Camel',
+        origin: 'Gujarat (Kutch) & Rajasthan',
+        fatPct: '2.5 - 3.5%',
+        avgYield: '6.0 - 12.0 Litres/day',
+        suitableSires: [
+          { sire: 'Kachchhi Grade-A Stud Camel Straw', vigor: '97% Excellent', calfWeight: '32-38 kg', outcome: 'High lactation adaptation in arid desert conditions with insulin-rich milk' },
+        ],
+        unsuitableSires: [
+          { sire: 'Cattle / Buffalo Semen', whyNot: '❌ Interspecies Chromosomal Isolation: Camelids belong to Camelidae family (74 chromosomes) and cannot cross with bovines.' },
         ]
       }
     ]
@@ -114,7 +206,16 @@ export default function BreedAdvisor() {
     let matchSires = [];
     let blockedSires = [];
 
-    if (species === 'BUFFALO') {
+    if (species === 'DAIRY_GOAT') {
+      matchSires = [
+        { sire: 'Jamnapari Grade-A Buck Straw (ICAR Certified)', vigor: '98% Excellent', calfWeight: '3.6-4.0 kg', outcome: 'Medicinal A2 goat milk with high fat content and easy digestion' },
+        { sire: 'Beetal Premium Buck Straw', vigor: '95% Very High', calfWeight: '3.2-3.6 kg', outcome: 'Twinning capacity with high lactation persistence' },
+      ];
+      blockedSires = [
+        { sire: 'Sheep / Ram Semen', whyNot: '❌ Goat (60 chromosomes) vs Sheep (54 chromosomes) hybrid embryo aborts early.' },
+        { sire: 'Cattle / Buffalo Straw', whyNot: '❌ Complete biological species mismatch.' },
+      ];
+    } else if (species === 'BUFFALO') {
       matchSires = [
         { sire: 'Murrah Grade-A Sire (NDDB Straw #MU-804)', vigor: '99% Outstanding', calfWeight: '34-36 kg', outcome: `Optimized for ${targetGoal === 'MAXIMIZE_FAT' ? '8.2% Fat Content' : '18L/day Milk Yield'}` },
         { sire: 'Nili-Ravi Sexed Straw (90% Female)', vigor: '95% Very High', calfWeight: '32-35 kg', outcome: 'High milk yield female buffalo calf with long lactation persistence' },
@@ -148,16 +249,16 @@ export default function BreedAdvisor() {
   };
 
   return (
-    <div className="fade-in" style={{ maxWidth: 1100, margin: '0 auto' }}>
+    <div className="fade-in" style={{ maxWidth: 1150, margin: '0 auto' }}>
       <div className="page-header" style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
           <span className="badge badge-emerald">
-            <Sparkles size={11} /> AI Sire & Species Compatibility Engine
+            <Sparkles size={11} /> AI Sire & Multi-Species Compatibility Guide
           </span>
         </div>
-        <h1 style={{ fontSize: 28, fontWeight: 800 }}>Livestock Category & Custom Sire Match Guide</h1>
+        <h1 style={{ fontSize: 28, fontWeight: 800 }}>Complete Dairy Livestock Breed & Sire Guide</h1>
         <p style={{ fontSize: 14.5, color: 'var(--color-husk-tan)', marginTop: 2 }}>
-          Select standard livestock categories or configure your custom animal parameters to receive tailored sire recommendations and calf vigor forecasts.
+          Explore all categories of dairy animals (Indigenous Cows, Crossbreeds, Buffaloes, Goats, Camels) with photos, suitable sire matches, expected calf health stats, and prohibited cross-breeding warnings.
         </p>
       </div>
 
@@ -165,7 +266,7 @@ export default function BreedAdvisor() {
       <div className="glass-card" style={{ marginBottom: 32, border: '2px solid var(--color-marigold)' }}>
         <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--color-text)', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
           <Sliders size={22} style={{ color: 'var(--color-marigold)' }} />
-          Custom Animal Selector & Compatibility Configurator
+          Custom Animal Selector & Sire Match Configurator
         </h2>
 
         <form onSubmit={handleCustomCalculate} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
@@ -176,12 +277,13 @@ export default function BreedAdvisor() {
               <option value="INDIGENOUS_COW">🐄 Indigenous Cow (Gir / Sahiwal)</option>
               <option value="CROSSBREED_COW">🥛 Crossbreed Cow (HF / Jersey)</option>
               <option value="BUFFALO">🐃 Water Buffalo (Murrah / Surti)</option>
+              <option value="DAIRY_GOAT">🐐 Dairy Goat (Jamnapari / Barbari)</option>
             </select>
           </div>
 
           <div className="form-group">
             <label className="form-label">Specific Breed Name</label>
-            <input type="text" className="input" placeholder="e.g. Gir, Sahiwal, Murrah"
+            <input type="text" className="input" placeholder="e.g. Gir, Sahiwal, Murrah, Jamnapari"
               value={customForm.breedName} onChange={e => setCustomForm(p => ({ ...p, breedName: e.target.value }))} />
           </div>
 
@@ -190,14 +292,14 @@ export default function BreedAdvisor() {
             <select className="select" value={customForm.parity}
               onChange={e => setCustomForm(p => ({ ...p, parity: e.target.value }))}>
               <option value="MAIDEN_HEIFER">🐣 Maiden Heifer (1st Insemination)</option>
-              <option value="1ST_LACTATION">🥛 1st Lactation Cow</option>
-              <option value="MULTIPLE_LACTATION">🐄 2nd+ Lactation Cow</option>
+              <option value="1ST_LACTATION">🥛 1st Lactation Animal</option>
+              <option value="MULTIPLE_LACTATION">🐄 2nd+ Lactation Animal</option>
             </select>
           </div>
 
           <div className="form-group">
             <label className="form-label">Dam Body Weight (kg)</label>
-            <input type="number" className="input font-mono-tabular" min="200" max="700"
+            <input type="number" className="input font-mono-tabular" min="30" max="700"
               value={customForm.weightKg} onChange={e => setCustomForm(p => ({ ...p, weightKg: Number(e.target.value) }))} />
           </div>
 
@@ -229,13 +331,13 @@ export default function BreedAdvisor() {
             <div className="grid-2">
               <div style={{ padding: 16, borderRadius: 14, background: 'var(--color-status-match-bg)', border: '1px solid rgba(37,107,42,0.3)' }}>
                 <h4 style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-status-match)', marginBottom: 12 }}>
-                  ✅ RECOMMENDED SIRE MATCHES
+                  ✅ RECOMMENDED SIRE / BUCK MATCHES
                 </h4>
                 {customResult.matchSires.map((s, i) => (
                   <div key={i} style={{ marginBottom: 10, padding: 10, background: 'var(--color-surface)', borderRadius: 10 }}>
                     <div style={{ fontWeight: 800, fontSize: 14 }}>{s.sire}</div>
                     <div style={{ fontSize: 12, color: 'var(--color-husk-tan)', marginTop: 4 }}>
-                      Calf Vigor: <strong>{s.vigor}</strong> | Est Weight: <strong>{s.calfWeight}</strong>
+                      Offspring Vigor: <strong>{s.vigor}</strong> | Est Weight: <strong>{s.calfWeight}</strong>
                     </div>
                     <div style={{ fontSize: 12, color: 'var(--color-pasture)', marginTop: 4 }}>
                       ✨ {s.outcome}
@@ -262,25 +364,23 @@ export default function BreedAdvisor() {
         )}
       </div>
 
-      {/* Species Category Tabs */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 28 }}>
+      {/* ALL LIVESTOCK SPECIES CATEGORY TABS */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12, marginBottom: 28 }}>
         {CATEGORIES.map(cat => {
           const isActive = cat.id === activeCategory;
           return (
             <div key={cat.id} onClick={() => { setActiveCategory(cat.id); setSelectedBreedIndex(0); }}
               style={{
-                cursor: 'pointer', padding: '16px 20px', borderRadius: 16,
+                cursor: 'pointer', padding: '14px 12px', borderRadius: 14,
                 background: isActive ? 'var(--color-surface)' : 'var(--color-surface-alt)',
                 border: `2px solid ${isActive ? 'var(--color-pasture)' : 'var(--color-border)'}`,
                 boxShadow: isActive ? 'var(--shadow-card-md)' : 'none',
                 transition: 'var(--transition-normal)',
-                display: 'flex', alignItems: 'center', gap: 14,
+                textAlign: 'center',
               }}>
-              <div style={{ fontSize: 32 }}>{cat.icon}</div>
-              <div>
-                <div style={{ fontSize: 15, fontWeight: 800, color: isActive ? 'var(--color-pasture)' : 'var(--color-text)' }}>{cat.name}</div>
-                <div style={{ fontSize: 12, color: 'var(--color-husk-tan)', marginTop: 2 }}>{cat.breeds.length} Standard Breeds</div>
-              </div>
+              <div style={{ fontSize: 28, marginBottom: 4 }}>{cat.icon}</div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: isActive ? 'var(--color-pasture)' : 'var(--color-text)', lineHeight: 1.2 }}>{cat.name.split(' (')[0]}</div>
+              <div style={{ fontSize: 11, color: 'var(--color-husk-tan)', marginTop: 3 }}>{cat.breeds.length} Breeds</div>
             </div>
           );
         })}
@@ -300,12 +400,12 @@ export default function BreedAdvisor() {
             <p style={{ fontSize: 14.5, color: 'var(--color-husk-tan)', marginBottom: 16 }}>{category.desc}</p>
 
             {/* Breed Sub-Selector */}
-            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
               <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text)' }}>Select Breed:</span>
               {category.breeds.map((b, idx) => (
                 <button key={b.name} onClick={() => setSelectedBreedIndex(idx)}
                   className={`btn ${idx === selectedBreedIndex ? 'btn-primary' : 'btn-secondary'}`}
-                  style={{ padding: '6px 14px', fontSize: 13, borderRadius: 'var(--radius-pill)' }}>
+                  style={{ padding: '6px 14px', fontSize: 12.5, borderRadius: 'var(--radius-pill)' }}>
                   {b.name}
                 </button>
               ))}
@@ -318,7 +418,7 @@ export default function BreedAdvisor() {
       <div className="grid-3" style={{ marginBottom: 28 }}>
         <div className="glass-card" style={{ textAlign: 'center' }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-husk-tan)', textTransform: 'uppercase' }}>ORIGIN REGION</div>
-          <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--color-text)', marginTop: 4 }}>{breed.origin}</div>
+          <div style={{ fontSize: 17, fontWeight: 800, color: 'var(--color-text)', marginTop: 4 }}>{breed.origin}</div>
         </div>
         <div className="glass-card" style={{ textAlign: 'center' }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-husk-tan)', textTransform: 'uppercase' }}>MILK FAT CONTENT</div>
@@ -335,7 +435,7 @@ export default function BreedAdvisor() {
         {/* SUITABLE SIRE STRAWS */}
         <div className="glass-card" style={{ border: '2px solid var(--color-status-match)', background: 'var(--color-surface)' }}>
           <h3 style={{ fontSize: 18, fontWeight: 800, color: 'var(--color-status-match)', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <CheckCircle2 size={20} /> RECOMMENDED SIRE STRAWS (TO USE)
+            <CheckCircle2 size={20} /> RECOMMENDED SIRE / BUCK STRAWS (TO USE)
           </h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -343,8 +443,8 @@ export default function BreedAdvisor() {
               <div key={i} style={{ padding: 14, borderRadius: 12, background: 'var(--color-status-match-bg)', border: '1px solid rgba(37,107,42,0.3)' }}>
                 <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-text)' }}>{s.sire}</div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, margin: '8px 0', fontSize: 12.5 }}>
-                  <div><span style={{ color: 'var(--color-husk-tan)' }}>Calf Vigor:</span> <strong style={{ color: 'var(--color-status-match)' }}>{s.vigor}</strong></div>
-                  <div><span style={{ color: 'var(--color-husk-tan)' }}>Est Birth Wt:</span> <strong style={{ color: 'var(--color-text)' }}>{s.calfWeight}</strong></div>
+                  <div><span style={{ color: 'var(--color-husk-tan)' }}>Offspring Vigor:</span> <strong style={{ color: 'var(--color-status-match)' }}>{s.vigor}</strong></div>
+                  <div><span style={{ color: 'var(--color-husk-tan)' }}>Est Birth Wt:</span> <strong style={{ color: 'var(--color-text)' }}>{s.calfWeight || s.kidWeight}</strong></div>
                 </div>
                 <div style={{ fontSize: 12.5, color: 'var(--color-husk-tan)', borderTop: '1px stroke var(--color-border)', paddingTop: 6 }}>
                   ✨ <strong>Expected Outcome:</strong> {s.outcome}
