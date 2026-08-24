@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, PawPrint, FlaskConical, Dna, BarChart3,
-  Bell, Users, LogOut, Wifi, WifiOff, Droplets, ShieldCheck
+  Bell, Users, LogOut, Wifi, WifiOff, Droplets, ShieldCheck, Settings as SettingsIcon
 } from 'lucide-react';
 
 const mainNav = [
@@ -26,6 +26,7 @@ const insightsNav = [
 
 const adminNav = [
   { to: '/farmers',   icon: Users,           label: 'Farmer Directory' },
+  { to: '/settings',  icon: SettingsIcon,    label: 'System Preferences' },
 ];
 
 export default function Sidebar({ connected, unreadCount }) {
@@ -125,8 +126,7 @@ export default function Sidebar({ connected, unreadCount }) {
         {renderNavGroup('Herd & Breeding', herdNav)}
         {renderNavGroup('Inventory', supplyNav)}
         {renderNavGroup('Reports & Alerts', insightsNav)}
-
-        {user?.role === 'ADMIN' && renderNavGroup('Administration', adminNav)}
+        {renderNavGroup('Administration', adminNav)}
       </nav>
 
       {/* User Profile Footer */}

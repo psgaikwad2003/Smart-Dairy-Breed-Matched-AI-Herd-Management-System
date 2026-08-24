@@ -10,6 +10,8 @@ import Inventory from './pages/Inventory';
 import Milk from './pages/Milk';
 import Analytics from './pages/Analytics';
 import Alerts from './pages/Alerts';
+import Farmers from './pages/Farmers';
+import Settings from './pages/Settings';
 
 function ProtectedRoute({ children }) {
   const { user } = useAuth();
@@ -35,6 +37,8 @@ function AppRoutes() {
         <Route path="milk"      element={<Milk />} />
         <Route path="analytics" element={<Analytics />} />
         <Route path="alerts"    element={<Alerts />} />
+        <Route path="farmers"   element={<Farmers />} />
+        <Route path="settings"  element={<Settings />} />
       </Route>
 
       {/* Catch-all */}
@@ -58,8 +62,8 @@ export default function App() {
               borderRadius: '10px',
               fontSize: '14px',
             },
-            success: { iconTheme: { primary: 'var(--color-primary)', secondary: '#0a0f0d' } },
-            error:   { iconTheme: { primary: 'var(--color-danger)',  secondary: '#fff' } },
+            success: { iconTheme: { primary: 'var(--color-marigold)', secondary: '#1C2B33' } },
+            error:   { iconTheme: { primary: 'var(--color-status-mismatch)', secondary: '#fff' } },
           }}
         />
       </AuthProvider>
