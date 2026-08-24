@@ -9,69 +9,53 @@ import {
 const mainNav = [
   { to: '/',              icon: LayoutDashboard, label: 'Dashboard' },
 ];
-
 const herdNav = [
   { to: '/herd',          icon: PawPrint,        label: 'My Cattle Herd' },
   { to: '/breeding',      icon: Dna,             label: 'Sire Match & AI' },
   { to: '/milk',          icon: Droplets,        label: 'Milk Yield Logs' },
-  { to: '/coop-payment',  icon: IndianRupee,     label: 'Co-op Payment Tracker' },
-  { to: '/feed-optimizer',icon: Utensils,        label: 'Feed & Profit Optimizer' },
-  { to: '/health-tracker',icon: HeartPulse,      label: 'Heat & Vaccine Advisory' },
+  { to: '/coop-payment',  icon: IndianRupee,     label: 'Co-op Payment' },
+  { to: '/feed-optimizer',icon: Utensils,        label: 'Feed Optimizer' },
+  { to: '/health-tracker',icon: HeartPulse,      label: 'Heat & Vaccines' },
 ];
-
 const supplyNav = [
   { to: '/inventory',     icon: FlaskConical,    label: 'Semen Straw Stock' },
 ];
-
 const insightsNav = [
-  { to: '/analytics',     icon: BarChart3,       label: 'Analytics Reports' },
-  { to: '/alerts',        icon: Bell,            label: 'System Alerts' },
+  { to: '/analytics',     icon: BarChart3,       label: 'Analytics' },
+  { to: '/alerts',        icon: Bell,            label: 'Alerts' },
 ];
-
 const adminNav = [
   { to: '/farmers',       icon: Users,           label: 'Farmer Directory' },
-  { to: '/settings',      icon: SettingsIcon,    label: 'System Preferences' },
+  { to: '/settings',      icon: SettingsIcon,    label: 'Settings' },
 ];
 
 export default function Sidebar({ connected, unreadCount }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const handleLogout = () => { logout(); navigate('/login'); };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
-  const renderNavGroup = (title, items) => (
-    <div style={{ marginBottom: 16 }}>
+  const renderGroup = (title, items) => (
+    <div style={{ marginBottom: 20 }}>
       {title && (
-        <div style={{
-          padding: '0 14px 6px',
-          fontSize: 11,
-          fontWeight: 700,
-          color: 'var(--color-husk-tan)',
-          textTransform: 'uppercase',
-          letterSpacing: '0.08em',
-        }}>
+        <div style={{ padding: '0 14px 5px', fontSize: 10.5, fontWeight: 700, color: 'var(--color-chai)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
           {title}
         </div>
       )}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {items.map(({ to, icon: Icon, label }) => (
           <NavLink key={to} to={to} end={to === '/'} style={({ isActive }) => ({
             display: 'flex', alignItems: 'center', gap: 11,
-            padding: '10px 14px', borderRadius: 'var(--radius-sm)',
+            padding: '9px 14px', borderRadius: var_sm,
             fontSize: 14, fontWeight: isActive ? 700 : 500,
-            color: isActive ? 'var(--color-marigold)' : 'var(--color-dairy-white)',
-            background: isActive ? 'linear-gradient(90deg, rgba(232,169,62,0.18) 0%, rgba(47,75,60,0.1) 100%)' : 'transparent',
-            borderLeft: isActive ? '3.5px solid var(--color-marigold)' : '3.5px solid transparent',
+            color: isActive ? 'var(--color-pasture)' : 'var(--color-husk-tan)',
+            background: isActive ? 'var(--color-pasture-tint)' : 'transparent',
+            borderLeft: isActive ? '3px solid var(--color-pasture)' : '3px solid transparent',
             transition: 'var(--transition-fast)',
             textDecoration: 'none',
-            position: 'relative',
           })}>
-            <Icon size={18} style={{ color: 'inherit', opacity: 0.9 }} />
+            <Icon size={17} style={{ color: 'inherit', flexShrink: 0 }} />
             <span>{label}</span>
-            {label.includes('Alerts') && unreadCount > 0 && (
+            {label === 'Alerts' && unreadCount > 0 && (
               <span className="badge badge-rose" style={{ marginLeft: 'auto', padding: '1px 7px', fontSize: 10 }}>
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
@@ -86,18 +70,16 @@ export default function Sidebar({ connected, unreadCount }) {
     <aside className="pro-sidebar">
       {/* Brand Header */}
       <div style={{
-        padding: '20px 18px 16px',
-        borderBottom: '1px solid var(--color-border)',
+        padding: '18px 16px 14px',
+        borderBottom: '1.5px solid var(--color-border)',
         display: 'flex', alignItems: 'center', gap: 12,
-        background: 'rgba(47, 75, 60, 0.4)'
+        background: 'var(--color-surface)',
       }}>
         <div className="milk-drop-frame" style={{ width: 42, height: 42, flexShrink: 0 }}>
-          <div className="milk-drop-frame-inner" style={{ fontSize: 20 }}>
-            🐄
-          </div>
+          <div className="milk-drop-frame-inner" style={{ fontSize: 20 }}>🐄</div>
         </div>
         <div>
-          <div className="font-display" style={{ fontWeight: 800, fontSize: 18, color: 'var(--color-dairy-white)', lineHeight: 1.1 }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 17, color: 'var(--color-text)', lineHeight: 1.1 }}>
             Smart Dairy
           </div>
           <div style={{ fontSize: 10.5, color: 'var(--color-marigold)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 3, fontWeight: 700 }}>
@@ -106,67 +88,58 @@ export default function Sidebar({ connected, unreadCount }) {
         </div>
       </div>
 
-      {/* Field Connection Status */}
-      <div style={{ padding: '12px 18px 8px' }}>
+      {/* Connection Status */}
+      <div style={{ padding: '10px 14px 4px' }}>
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '8px 12px', borderRadius: 'var(--radius-xs)',
-          background: 'rgba(251, 247, 238, 0.03)',
-          border: '1px solid var(--color-border)',
+          padding: '7px 12px', borderRadius: 'var(--radius-sm)',
+          background: connected ? 'var(--color-status-match-bg)' : 'var(--color-status-mismatch-bg)',
+          border: `1px solid ${connected ? 'rgba(37,107,42,0.3)' : 'rgba(192,57,43,0.3)'}`,
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 600, color: 'var(--color-dairy-white)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 700, color: connected ? 'var(--color-status-match)' : 'var(--color-status-mismatch)' }}>
             <span className={`milk-drop-dot ${connected ? 'milk-drop-full' : 'milk-drop-empty'}`} />
-            {connected ? 'System Ready' : 'Offline Mode'}
+            {connected ? 'Live Sync Active' : 'Offline Mode'}
           </div>
-          <div style={{ fontSize: 11, color: connected ? 'var(--color-marigold)' : 'var(--color-text-muted)' }}>
-            {connected ? <Wifi size={14} /> : <WifiOff size={14} />}
-          </div>
+          {connected ? <Wifi size={13} style={{ color: 'var(--color-status-match)' }} /> : <WifiOff size={13} style={{ color: 'var(--color-status-mismatch)' }} />}
         </div>
       </div>
 
-      {/* Navigation Sections */}
-      <nav style={{ flex: 1, padding: '10px 14px', overflowY: 'auto' }}>
-        {renderNavGroup('Daily Operations', mainNav)}
-        {renderNavGroup('Herd & Breeding', herdNav)}
-        {renderNavGroup('Inventory', supplyNav)}
-        {renderNavGroup('Reports & Alerts', insightsNav)}
-        {renderNavGroup('Administration', adminNav)}
+      {/* Nav */}
+      <nav style={{ flex: 1, padding: '10px 10px', overflowY: 'auto' }}>
+        {renderGroup('Operations', mainNav)}
+        {renderGroup('Herd & Breeding', herdNav)}
+        {renderGroup('Inventory', supplyNav)}
+        {renderGroup('Reports', insightsNav)}
+        {renderGroup('Admin', adminNav)}
       </nav>
 
-      {/* User Profile Footer */}
-      <div style={{
-        padding: '14px 16px',
-        borderTop: '1px solid var(--color-border)',
-        background: 'rgba(28, 43, 51, 0.8)',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{
-              width: 36, height: 36, borderRadius: '50%',
-              background: 'var(--color-pasture)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontWeight: 800, fontSize: 14, color: 'var(--color-marigold)',
-              border: '2px solid var(--color-marigold)',
-            }}>
-              {(user?.fullName || user?.name || 'U')[0]}
+      {/* User Footer */}
+      <div style={{ padding: '12px 14px', borderTop: '1.5px solid var(--color-border)', background: 'var(--color-surface-alt)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: '50%',
+            background: 'var(--color-pasture)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontWeight: 800, fontSize: 14, color: '#FFFDF7',
+          }}>{(user?.fullName || user?.name || 'U')[0]}</div>
+          <div>
+            <div style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--color-text)', lineHeight: 1.1 }}>
+              {user?.fullName || user?.name || 'User'}
             </div>
-            <div>
-              <div style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--color-dairy-white)', lineHeight: 1.1 }}>
-                {user?.fullName || user?.name || 'User'}
-              </div>
-              <div style={{ fontSize: 11, color: 'var(--color-marigold)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 4, fontWeight: 600 }}>
-                <ShieldCheck size={12} style={{ color: 'var(--color-marigold)' }} />
-                {user?.role?.replace('_', ' ')}
-              </div>
+            <div style={{ fontSize: 11, color: 'var(--color-chai)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
+              <ShieldCheck size={11} style={{ color: 'var(--color-marigold)' }} />
+              {user?.role?.replace('_', ' ')}
             </div>
           </div>
         </div>
-
-        <button className="btn btn-ghost" onClick={handleLogout}
-          style={{ width: '100%', justifyContent: 'center', gap: 8, fontSize: 13, padding: '8px 10px', borderRadius: 8, background: 'rgba(251,247,238,0.04)' }}>
-          <LogOut size={14} /> Sign Out Account
+        <button className="btn btn-secondary" onClick={handleLogout}
+          style={{ width: '100%', justifyContent: 'center', gap: 8, fontSize: 13, padding: '8px 10px', borderRadius: 8 }}>
+          <LogOut size={14} /> Sign Out
         </button>
       </div>
     </aside>
   );
 }
+
+// small helper to avoid string eval in template literal inside JSX
+const var_sm = 'var(--radius-sm)';
