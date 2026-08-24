@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { breedingApi, cowApi, inventoryApi, bullApi } from '../api/client';
 import { useAuth } from '../context/AuthContext';
-import { Dna, CheckCircle2, AlertTriangle, XCircle, ChevronRight, Search, Sparkles, Cpu, Award, Zap, Activity } from 'lucide-react';
+import { Dna, CheckCircle2, AlertTriangle, XCircle, ChevronRight, Search, Sparkles, Cpu, Award, Zap } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const BREEDING_GOALS = ['PUREBRED', 'CROSSBRED', 'GENERAL'];
@@ -10,43 +10,44 @@ const CompatBanner = ({ result }) => {
   if (!result) return null;
   const isMatch    = result.status === 'MATCH';
   const isOverride = result.status === 'OVERRIDE';
+  const isBlocked  = result.status === 'BLOCKED';
 
   return (
-    <div style={{
-      padding: '20px 24px', borderRadius: 16,
-      background: isMatch ? 'rgba(16,185,129,0.1)' : isOverride ? 'rgba(245,158,11,0.1)' : 'rgba(244,63,94,0.1)',
-      border: `1px solid ${isMatch ? 'rgba(52,211,153,0.3)' : isOverride ? 'rgba(245,158,11,0.3)' : 'rgba(244,63,94,0.3)'}`,
+    <div className={`sunrise-fade ${isBlocked ? 'mismatch-shake' : ''}`} style={{
+      padding: '22px 26px', borderRadius: 16,
+      background: isMatch ? 'var(--color-status-match-bg)' : isOverride ? 'var(--color-status-warning-bg)' : 'var(--color-status-mismatch-bg)',
+      border: `2px solid ${isMatch ? 'var(--color-status-match)' : isOverride ? 'var(--color-status-warning)' : 'var(--color-status-mismatch)'}`,
     }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, marginBottom: 12 }}>
         <div style={{
-          width: 42, height: 42, borderRadius: 12,
-          background: isMatch ? 'rgba(16,185,129,0.2)' : isOverride ? 'rgba(245,158,11,0.2)' : 'rgba(244,63,94,0.2)',
-          color: isMatch ? 'var(--color-primary-bright)' : isOverride ? 'var(--color-accent-bright)' : 'var(--color-rose)',
+          width: 44, height: 44, borderRadius: 12,
+          background: isMatch ? 'var(--color-status-match)' : isOverride ? 'var(--color-status-warning)' : 'var(--color-status-mismatch)',
+          color: 'var(--color-dairy-white)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
         }}>
-          {isMatch ? <CheckCircle2 size={24} /> : isOverride ? <AlertTriangle size={24} /> : <XCircle size={24} />}
+          {isMatch ? <CheckCircle2 size={26} /> : isOverride ? <AlertTriangle size={26} /> : <XCircle size={26} />}
         </div>
         <div>
-          <div style={{
-            fontWeight: 800, fontSize: 18,
-            color: isMatch ? 'var(--color-primary-bright)' : isOverride ? 'var(--color-accent-bright)' : 'var(--color-rose)'
+          <div className="font-display" style={{
+            fontWeight: 800, fontSize: 19,
+            color: isMatch ? '#72b276' : isOverride ? '#f3be68' : '#e06c62'
           }}>
             {isMatch ? '✅ Genetic Compatibility Match' : isOverride ? '⚠️ Mismatch — Technician Override Required' : '🚫 Prohibited Inbreeding Combination — BLOCKED'}
           </div>
-          <div style={{ fontSize: 13.5, color: 'var(--color-text-dim)', marginTop: 4, lineHeight: 1.5 }}>
+          <div style={{ fontSize: 14.5, color: 'var(--color-dairy-white)', marginTop: 4, lineHeight: 1.5, fontWeight: 500 }}>
             {result.explanation || result.message}
           </div>
         </div>
       </div>
 
       {result.suggestedAlternatives?.length > 0 && (
-        <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-          <div style={{ fontSize: 11, color: 'var(--color-text-muted)', marginBottom: 8, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+        <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(217,201,163,0.15)' }}>
+          <div style={{ fontSize: 11.5, color: 'var(--color-husk-tan)', marginBottom: 8, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
             Recommended Genetic Alternatives
           </div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {result.suggestedAlternatives.map(a => (
-              <span key={typeof a === 'string' ? a : a.name} className="badge badge-sky">
+              <span key={typeof a === 'string' ? a : a.name} className="badge badge-sky font-mono-tabular">
                 {String(typeof a === 'string' ? a : a.displayName || a.name).replace(/_/g, ' ')}
               </span>
             ))}
@@ -114,7 +115,7 @@ export default function Breeding() {
       setCows([cow]);
       setForm(p => ({ ...p, cowId: cow.id }));
     } catch {
-      toast.error('Cattle record not found with that tag ID');
+      toast.error('Cattle record not found with that ear-tag ID');
     } finally { setLoadCows(false); }
   };
 
@@ -131,7 +132,7 @@ export default function Breeding() {
   const handleValidate = async (e) => {
     e.preventDefault();
     if (!form.cowId || !form.semenStrawId) {
-      toast.error('Please select both a cattle profile and a semen straw');
+      toast.error('Please select both a cattle ear-tag and a semen straw');
       return;
     }
     setValidating(true);
@@ -208,22 +209,22 @@ export default function Breeding() {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
               <span className="badge badge-emerald">
-                <Sparkles size={11} /> Next-Gen Genetic Engine
+                <Sparkles size={11} /> Field-Tested Genetic Engine
               </span>
             </div>
-            <h1 style={{ fontSize: 26, fontWeight: 800 }}>Sire Recommendation & Breeding AI</h1>
-            <p style={{ fontSize: 13.5, color: 'var(--color-text-muted)', marginTop: 2 }}>
-              Rank top-performing bulls by PTA Milk, Net Merit (NM$), Inbreeding %, and Climate Exotic Blood targets.
+            <h1 style={{ fontSize: 28, fontWeight: 800 }}>Sire Recommendation & Insemination</h1>
+            <p style={{ fontSize: 15, color: 'var(--color-husk-tan)', marginTop: 2 }}>
+              Rank top bulls by PTA Milk, Net Merit (NM$), Inbreeding %, and Climate Exotic Blood targets.
             </p>
           </div>
 
           {/* Mode Switch Pills */}
-          <div style={{ display: 'flex', background: 'rgba(255,255,255,0.04)', padding: 4, borderRadius: 'var(--radius-pill)', border: '1px solid var(--color-border)' }}>
-            <button className={`btn ${tab === 'RECOMMEND' ? 'btn-primary' : 'btn-ghost'}`} style={{ borderRadius: 'var(--radius-pill)', padding: '6px 16px', fontSize: 13 }}
+          <div style={{ display: 'flex', background: 'rgba(217,201,163,0.06)', padding: 4, borderRadius: 'var(--radius-pill)', border: '1px solid var(--color-border)' }}>
+            <button className={`btn ${tab === 'RECOMMEND' ? 'btn-accent' : 'btn-ghost'}`} style={{ borderRadius: 'var(--radius-pill)', padding: '7px 18px', fontSize: 13.5 }}
               onClick={() => setTab('RECOMMEND')}>
               🧬 Genetic Sire Recommendation Engine
             </button>
-            <button className={`btn ${tab === 'WORKFLOW' ? 'btn-primary' : 'btn-ghost'}`} style={{ borderRadius: 'var(--radius-pill)', padding: '6px 16px', fontSize: 13 }}
+            <button className={`btn ${tab === 'WORKFLOW' ? 'btn-accent' : 'btn-ghost'}`} style={{ borderRadius: 'var(--radius-pill)', padding: '7px 18px', fontSize: 13.5 }}
               onClick={() => setTab('WORKFLOW')}>
               🩺 Record Insemination Event
             </button>
@@ -234,11 +235,11 @@ export default function Breeding() {
       {/* MODE 1: GENETIC SIRE RECOMMENDATION ENGINE */}
       {tab === 'RECOMMEND' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-          {/* Cow Selector Toolbar */}
+          {/* Cow Selector Toolbar with Physical Ear-Tag Anchor */}
           <div className="glass-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 280 }}>
-              <span style={{ fontSize: 14, fontWeight: 700 }}>Select Dam (Cow):</span>
-              <select className="select" style={{ flex: 1 }} value={selectedCowForRec} onChange={e => setSelectedCowForRec(e.target.value)}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, flex: 1, minWidth: 300 }}>
+              <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-husk-tan)' }}>Select Dam (Cow):</span>
+              <select className="select font-mono-tabular" style={{ flex: 1 }} value={selectedCowForRec} onChange={e => setSelectedCowForRec(e.target.value)}>
                 {cows.map(c => (
                   <option key={c.id} value={c.id}>
                     {c.tagNumber} — {c.breed?.replace(/_/g,' ')} ({c.currentMilkYieldLitres || 12} L/day)
@@ -248,8 +249,8 @@ export default function Breeding() {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
-                <input type="checkbox" checked={a2a2OnlyFilter} onChange={e => setA2a2OnlyFilter(e.target.checked)} style={{ accentColor: 'var(--color-primary-bright)' }} />
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 14, fontWeight: 600, color: 'var(--color-dairy-white)' }}>
+                <input type="checkbox" checked={a2a2OnlyFilter} onChange={e => setA2a2OnlyFilter(e.target.checked)} style={{ accentColor: 'var(--color-marigold)', width: 16, height: 16 }} />
                 🥛 Filter A2A2 Certified Bulls Only
               </label>
 
@@ -261,8 +262,8 @@ export default function Breeding() {
 
           {/* Recommendations Grid */}
           <div>
-            <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Award size={20} style={{ color: 'var(--color-accent-bright)' }} />
+            <h3 style={{ fontSize: 19, fontWeight: 800, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Award size={22} style={{ color: 'var(--color-marigold)' }} />
               Ranked Sire Recommendations for Selected Cattle
             </h3>
 
@@ -284,57 +285,59 @@ export default function Breeding() {
             ) : (
               <div className="grid-2">
                 {recommendations.map((rec) => (
-                  <div key={rec.semenStrawId} className="glass-card" style={{
+                  <div key={rec.semenStrawId} className="glass-card ear-tag-card" style={{
                     position: 'relative', overflow: 'hidden',
-                    borderColor: rec.recommendationRank.includes('#1') ? 'var(--color-primary-bright)' : 'var(--color-border)',
-                    boxShadow: rec.recommendationRank.includes('#1') ? '0 0 25px rgba(16,185,129,0.15)' : 'none'
+                    borderColor: rec.recommendationRank.includes('#1') ? 'var(--color-marigold)' : 'var(--color-border)',
+                    boxShadow: rec.recommendationRank.includes('#1') ? '0 0 25px rgba(232, 169, 62, 0.2)' : 'none'
                   }}>
                     {/* Top Rank Badge */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                      <span className={`badge ${rec.recommendationRank.includes('#1') ? 'badge-emerald' : 'badge-sky'}`} style={{ fontWeight: 800, padding: '4px 10px' }}>
+                      <span className={`badge ${rec.recommendationRank.includes('#1') ? 'badge-amber' : 'badge-sky'}`} style={{ fontWeight: 800, padding: '5px 12px' }}>
                         {rec.recommendationRank}
                       </span>
                       <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: 22, fontWeight: 900, color: 'var(--color-primary-bright)' }}>{rec.compositeScore} <span style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>/ 100 Score</span></div>
+                        <div className="font-mono-tabular" style={{ fontSize: 24, fontWeight: 900, color: 'var(--color-marigold)' }}>
+                          {rec.compositeScore} <span style={{ fontSize: 13, color: 'var(--color-husk-tan)' }}>/ 100 Score</span>
+                        </div>
                       </div>
                     </div>
 
-                    <h4 style={{ fontSize: 18, fontWeight: 800, color: 'var(--color-text)' }}>{rec.bullName} ({rec.bullBreed?.replace(/_/g,' ')})</h4>
-                    <div style={{ fontSize: 12.5, color: 'var(--color-text-muted)', marginTop: 2, marginBottom: 14 }}>
-                      Batch #{rec.batchNo} · Reg: {rec.bullRegistrationNo || 'NDDB'} · Grade {rec.stationGrade} ({rec.stockQty} straws in stock)
+                    <h4 style={{ fontSize: 20, fontWeight: 800, color: 'var(--color-dairy-white)' }}>{rec.bullName} ({rec.bullBreed?.replace(/_/g,' ')})</h4>
+                    <div className="font-mono-tabular" style={{ fontSize: 13, color: 'var(--color-husk-tan)', marginTop: 2, marginBottom: 14 }}>
+                      Batch #{rec.batchNo} · Reg: {rec.bullRegistrationNo || 'NDDB'} · Grade {rec.stationGrade} ({rec.stockQty} straws left)
                     </div>
 
                     {/* Genetic Profile Parameter Matrix */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 14, background: 'rgba(255,255,255,0.025)', padding: 12, borderRadius: 12, border: '1px solid var(--color-border)' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 14, background: 'rgba(217, 201, 163, 0.04)', padding: 14, borderRadius: 12, border: '1px solid var(--color-border)' }}>
                       <div>
-                        <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>PTA Milk</div>
-                        <div style={{ fontWeight: 800, fontSize: 14, color: 'var(--color-sky)' }}>+{rec.ptaMilkKg} kg</div>
+                        <div style={{ fontSize: 11.5, color: 'var(--color-husk-tan)' }}>PTA Milk</div>
+                        <div className="font-mono-tabular" style={{ fontWeight: 800, fontSize: 15, color: 'var(--color-sky)' }}>+{rec.ptaMilkKg} kg</div>
                       </div>
                       <div>
-                        <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>Net Merit (NM$)</div>
-                        <div style={{ fontWeight: 800, fontSize: 14, color: 'var(--color-accent-bright)' }}>${rec.netMeritIndex}</div>
+                        <div style={{ fontSize: 11.5, color: 'var(--color-husk-tan)' }}>Net Merit (NM$)</div>
+                        <div className="font-mono-tabular" style={{ fontWeight: 800, fontSize: 15, color: 'var(--color-marigold)' }}>${rec.netMeritIndex}</div>
                       </div>
                       <div>
-                        <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>Expected Calf Exotic</div>
-                        <div style={{ fontWeight: 800, fontSize: 14, color: rec.expectedCalfExoticBloodPct > 75 ? 'var(--color-rose)' : 'var(--color-primary-bright)' }}>
+                        <div style={{ fontSize: 11.5, color: 'var(--color-husk-tan)' }}>Expected Calf Exotic</div>
+                        <div className="font-mono-tabular" style={{ fontWeight: 800, fontSize: 15, color: rec.expectedCalfExoticBloodPct > 75 ? 'var(--color-status-mismatch)' : '#72b276' }}>
                           {rec.expectedCalfExoticBloodPct}%
                         </div>
                       </div>
                       <div>
-                        <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>A2A2 Status</div>
-                        <div style={{ fontWeight: 800, fontSize: 13, color: rec.a2a2Status ? 'var(--color-primary-bright)' : 'var(--color-text-muted)' }}>
+                        <div style={{ fontSize: 11.5, color: 'var(--color-husk-tan)' }}>A2A2 Status</div>
+                        <div style={{ fontWeight: 800, fontSize: 13.5, color: rec.a2a2Status ? '#72b276' : 'var(--color-text-muted)' }}>
                           {rec.a2a2Status ? '✓ Certified A2A2' : 'Standard'}
                         </div>
                       </div>
                       <div>
-                        <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>Inbreeding Est.</div>
-                        <div style={{ fontWeight: 800, fontSize: 13, color: rec.estimatedInbreedingPct > 6 ? 'var(--color-rose)' : 'var(--color-text)' }}>
+                        <div style={{ fontSize: 11.5, color: 'var(--color-husk-tan)' }}>Inbreeding Est.</div>
+                        <div className="font-mono-tabular" style={{ fontWeight: 800, fontSize: 13.5, color: rec.estimatedInbreedingPct > 6 ? 'var(--color-status-mismatch)' : 'var(--color-dairy-white)' }}>
                           {rec.estimatedInbreedingPct}%
                         </div>
                       </div>
                       <div>
-                        <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>Calving Ease</div>
-                        <div style={{ fontWeight: 800, fontSize: 13, color: 'var(--color-text)' }}>Score {rec.calvingEaseScore || 1}</div>
+                        <div style={{ fontSize: 11.5, color: 'var(--color-husk-tan)' }}>Calving Ease</div>
+                        <div className="font-mono-tabular" style={{ fontWeight: 800, fontSize: 13.5, color: 'var(--color-dairy-white)' }}>Score {rec.calvingEaseScore || 1}</div>
                       </div>
                     </div>
 
@@ -342,12 +345,12 @@ export default function Breeding() {
                     {rec.warnings?.length > 0 && (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 14 }}>
                         {rec.warnings.map((w, idx) => (
-                          <div key={idx} style={{ fontSize: 12, color: 'var(--color-accent-bright)', fontWeight: 600 }}>{w}</div>
+                          <div key={idx} style={{ fontSize: 12.5, color: 'var(--color-marigold)', fontWeight: 600 }}>{w}</div>
                         ))}
                       </div>
                     )}
 
-                    <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginBottom: 14, lineHeight: 1.4 }}>
+                    <div style={{ fontSize: 13, color: 'var(--color-husk-tan)', marginBottom: 14, lineHeight: 1.4 }}>
                       💡 {rec.rationale}
                     </div>
 
@@ -367,41 +370,41 @@ export default function Breeding() {
             )}
           </div>
 
-          {/* Offspring Simulator Output Modal / Panel */}
+          {/* Offspring Simulator Output Panel */}
           {simResult && (
-            <div className="glass-card" style={{ background: 'rgba(56,189,248,0.05)', borderColor: 'rgba(56,189,248,0.3)' }}>
+            <div className="glass-card sunrise-fade" style={{ background: 'rgba(90, 163, 199, 0.08)', borderColor: 'rgba(90, 163, 199, 0.4)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                <h3 style={{ fontSize: 17, fontWeight: 800, color: 'var(--color-sky)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Cpu size={20} /> Sire Insemination Simulation Forecast
+                <h3 style={{ fontSize: 18, fontWeight: 800, color: 'var(--color-sky)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Cpu size={22} /> Sire Insemination Simulation Forecast
                 </h3>
                 <button className="btn btn-ghost btn-icon" onClick={() => setSimResult(null)}>✕</button>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 16 }}>
-                <div style={{ padding: 12, background: 'rgba(255,255,255,0.03)', borderRadius: 10 }}>
-                  <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>Dam Current Yield</div>
-                  <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--color-text)' }}>{simResult.cowCurrentYield} L/day</div>
+                <div style={{ padding: 14, background: 'rgba(217, 201, 163, 0.04)', borderRadius: 10 }}>
+                  <div style={{ fontSize: 11.5, color: 'var(--color-husk-tan)' }}>Dam Current Yield</div>
+                  <div className="font-mono-tabular" style={{ fontSize: 18, fontWeight: 800, color: 'var(--color-dairy-white)' }}>{simResult.cowCurrentYield} L/day</div>
                 </div>
-                <div style={{ padding: 12, background: 'rgba(255,255,255,0.03)', borderRadius: 10 }}>
-                  <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>Predicted Daughter Potential</div>
-                  <div style={{ fontSize: 18, fontWeight: 900, color: 'var(--color-primary-bright)' }}>{simResult.predictedCalfYieldPotentialKg} L/day</div>
+                <div style={{ padding: 14, background: 'rgba(217, 201, 163, 0.04)', borderRadius: 10 }}>
+                  <div style={{ fontSize: 11.5, color: 'var(--color-husk-tan)' }}>Predicted Daughter Potential</div>
+                  <div className="font-mono-tabular" style={{ fontSize: 20, fontWeight: 900, color: '#72b276' }}>{simResult.predictedCalfYieldPotentialKg} L/day</div>
                 </div>
-                <div style={{ padding: 12, background: 'rgba(255,255,255,0.03)', borderRadius: 10 }}>
-                  <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>Calf Exotic Blood %</div>
-                  <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--color-sky)' }}>{simResult.predictedCalfExoticBloodPct}%</div>
+                <div style={{ padding: 14, background: 'rgba(217, 201, 163, 0.04)', borderRadius: 10 }}>
+                  <div style={{ fontSize: 11.5, color: 'var(--color-husk-tan)' }}>Calf Exotic Blood %</div>
+                  <div className="font-mono-tabular" style={{ fontSize: 18, fontWeight: 800, color: 'var(--color-sky)' }}>{simResult.predictedCalfExoticBloodPct}%</div>
                 </div>
-                <div style={{ padding: 12, background: 'rgba(255,255,255,0.03)', borderRadius: 10 }}>
-                  <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>A2A2 Guaranteed?</div>
-                  <div style={{ fontSize: 16, fontWeight: 800, color: simResult.isA2A2Guaranteed ? 'var(--color-primary-bright)' : 'var(--color-text-muted)' }}>
+                <div style={{ padding: 14, background: 'rgba(217, 201, 163, 0.04)', borderRadius: 10 }}>
+                  <div style={{ fontSize: 11.5, color: 'var(--color-husk-tan)' }}>A2A2 Guaranteed?</div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: simResult.isA2A2Guaranteed ? '#72b276' : 'var(--color-text-muted)' }}>
                     {simResult.isA2A2Guaranteed ? 'YES (100%)' : 'NO'}
                   </div>
                 </div>
               </div>
 
-              <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--color-text)', marginBottom: 4 }}>
+              <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--color-dairy-white)', marginBottom: 4 }}>
                 {simResult.suitabilityVerdict}
               </div>
-              <div style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>
+              <div style={{ fontSize: 13.5, color: 'var(--color-husk-tan)' }}>
                 {simResult.detailedRationale}
               </div>
             </div>
@@ -415,20 +418,20 @@ export default function Breeding() {
           {/* Workflow Step Bar */}
           <div className="glass-card" style={{ padding: '16px 20px', marginBottom: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              {['1. Cattle & Semen Selection', '2. Veterinary Confirmation'].map((s, i) => (
+              {['1. Cattle Ear-Tag & Semen Selection', '2. Veterinary Confirmation'].map((s, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{
-                    width: 32, height: 32, borderRadius: '50%',
+                    width: 34, height: 34, borderRadius: '50%',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 13, fontWeight: 800,
-                    background: step > i ? 'var(--color-primary-bright)' : step === i+1 ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.04)',
-                    color: step > i ? '#03180e' : step === i+1 ? 'var(--color-primary-bright)' : 'var(--color-text-muted)',
-                    border: step === i+1 ? '1px solid var(--color-primary-bright)' : '1px solid var(--color-border)',
+                    fontSize: 14, fontWeight: 800,
+                    background: step > i ? 'var(--color-pasture)' : step === i+1 ? 'rgba(232,169,62,0.2)' : 'rgba(255,255,255,0.04)',
+                    color: step > i ? 'var(--color-marigold)' : step === i+1 ? 'var(--color-marigold)' : 'var(--color-text-muted)',
+                    border: step === i+1 ? '1.5px solid var(--color-marigold)' : '1px solid var(--color-border)',
                   }}>{i+1}</div>
-                  <span style={{ fontSize: 13.5, color: step === i+1 ? 'var(--color-text)' : 'var(--color-text-muted)', fontWeight: step === i+1 ? 700 : 500 }}>
+                  <span style={{ fontSize: 14, color: step === i+1 ? 'var(--color-dairy-white)' : 'var(--color-text-muted)', fontWeight: step === i+1 ? 700 : 500 }}>
                     {s}
                   </span>
-                  {i < 1 && <ChevronRight size={16} style={{ color: 'var(--color-text-muted)', marginLeft: 8 }} />}
+                  {i < 1 && <ChevronRight size={18} style={{ color: 'var(--color-text-muted)', marginLeft: 8 }} />}
                 </div>
               ))}
             </div>
@@ -438,31 +441,34 @@ export default function Breeding() {
             {/* Left Form Panel */}
             {step === 1 && (
               <form onSubmit={handleValidate} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                {/* Cow Selection */}
+                {/* Cow Ear-Tag Selection */}
                 <div className="glass-card">
-                  <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
                     🐄 Step 1: Select Cattle Ear Tag
                   </h3>
                   <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
                     <div className="input-wrapper" style={{ flex: 1 }}>
                       <Search size={16} className="input-icon" />
-                      <input className="input input-with-icon" placeholder="Search tag ID (e.g. TN-GJ-001)..."
+                      <input className="input input-with-icon font-mono-tabular" placeholder="Search ear-tag ID (e.g. TN-GJ-001)..."
                         value={cowSearch} onChange={e => setCowSearch(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && searchCow()} />
                     </div>
                     <button type="button" className="btn btn-secondary" onClick={searchCow} disabled={loadCows}>
-                      {loadCows ? <span className="spinner" /> : 'Search'}
+                      {loadCows ? <span className="spinner" /> : 'Search Tag'}
                     </button>
                   </div>
 
                   {selectedCow && (
                     <div style={{
                       padding: '14px 16px', borderRadius: 12,
-                      background: 'rgba(16,185,129,0.08)',
-                      border: '1px solid rgba(52,211,153,0.25)',
+                      background: 'rgba(47,75,60,0.4)',
+                      border: '1.5px solid var(--color-marigold)',
                     }}>
-                      <div style={{ fontWeight: 800, fontSize: 15, color: 'var(--color-primary-bright)' }}>{selectedCow.tagNumber}</div>
-                      <div style={{ fontSize: 13, color: 'var(--color-text-dim)', marginTop: 2 }}>
+                      <div className="ear-tag-badge" style={{ marginBottom: 6 }}>
+                        <span className="ear-tag-rivet" />
+                        {selectedCow.tagNumber}
+                      </div>
+                      <div style={{ fontSize: 13.5, color: 'var(--color-husk-tan)', marginTop: 4 }}>
                         Breed: {selectedCow.breed?.replace(/_/g, ' ')} · Status: {selectedCow.status}
                         {selectedCow.lactationCount && ` · Lactation ${selectedCow.lactationCount}`}
                       </div>
@@ -472,10 +478,10 @@ export default function Breeding() {
 
                 {/* Semen Straw Selection */}
                 <div className="glass-card">
-                  <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 14 }}>🧪 Step 2: Select Semen Straw Batch</h3>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 14 }}>🧪 Step 2: Select Semen Straw Batch</h3>
 
                   {selectedCow && (
-                    <button type="button" className="btn btn-secondary" style={{ marginBottom: 14, fontSize: 12.5 }}
+                    <button type="button" className="btn btn-secondary" style={{ marginBottom: 14, fontSize: 13 }}
                       onClick={() => loadStraws(selectedCow.breed)}>
                       Load Compatible Straws for {selectedCow.breed?.replace(/_/g, ' ')}
                     </button>
@@ -486,32 +492,32 @@ export default function Breeding() {
                       {straws.map(s => (
                         <label key={s.id} style={{
                           display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer',
-                          padding: '12px 14px', borderRadius: 10,
-                          background: form.semenStrawId == s.id ? 'rgba(16,185,129,0.12)' : 'rgba(255,255,255,0.025)',
-                          border: `1px solid ${form.semenStrawId == s.id ? 'rgba(52,211,153,0.35)' : 'var(--color-border)'}`,
+                          padding: '14px 16px', borderRadius: 10,
+                          background: form.semenStrawId == s.id ? 'rgba(232,169,62,0.14)' : 'rgba(251,247,238,0.03)',
+                          border: `1.5px solid ${form.semenStrawId == s.id ? 'var(--color-marigold)' : 'var(--color-border)'}`,
                           transition: 'var(--transition-fast)',
                         }}>
                           <input type="radio" name="straw" value={s.id}
                             checked={form.semenStrawId == s.id}
                             onChange={e => setForm(p => ({ ...p, semenStrawId: e.target.value }))}
-                            style={{ accentColor: 'var(--color-primary-bright)' }}
+                            style={{ accentColor: 'var(--color-marigold)', width: 16, height: 16 }}
                           />
                           <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 13.5, fontWeight: 700 }}>
+                            <div className="font-mono-tabular" style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-dairy-white)' }}>
                               {s.breed?.replace(/_/g, ' ')} — Batch #{s.batchNo}
                             </div>
-                            <div style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>
+                            <div style={{ fontSize: 12.5, color: 'var(--color-husk-tan)' }}>
                               {s.semenStationName} · Station Grade {s.stationGrade}
                             </div>
                           </div>
-                          <span className={`badge ${s.stockQty <= 5 ? 'badge-rose' : 'badge-emerald'}`}>
-                            {s.stockQty} straws
+                          <span className={`badge ${s.stockQty <= 5 ? 'badge-rose' : 'badge-emerald'} font-mono-tabular`}>
+                            {s.stockQty} straws left
                           </span>
                         </label>
                       ))}
                     </div>
                   ) : (
-                    <div style={{ color: 'var(--color-text-muted)', fontSize: 13, textAlign: 'center', padding: '24px 0' }}>
+                    <div style={{ color: 'var(--color-husk-tan)', fontSize: 13.5, textAlign: 'center', padding: '24px 0' }}>
                       {selectedCow ? 'Click the button above to load semen inventory' : 'Select a cattle ear tag first'}
                     </div>
                   )}
@@ -519,14 +525,14 @@ export default function Breeding() {
 
                 {/* Breeding Target Goal */}
                 <div className="glass-card">
-                  <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>🎯 Step 3: Target Breeding Goal</h3>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>🎯 Step 3: Target Breeding Goal</h3>
                   <select className="select" value={form.breedingGoal}
                     onChange={e => setForm(p => ({ ...p, breedingGoal: e.target.value }))}>
                     {BREEDING_GOALS.map(g => <option key={g} value={g}>{g} Selection Strategy</option>)}
                   </select>
                 </div>
 
-                <button type="submit" className="btn btn-primary" style={{ height: 46, fontSize: 15, borderRadius: 'var(--radius-sm)' }} disabled={validating}>
+                <button type="submit" className="btn btn-accent" style={{ height: 48, fontSize: 15 }} disabled={validating}>
                   {validating ? <span className="spinner" /> : <><Cpu size={18} /> Validate Genetic Compatibility</>}
                 </button>
               </form>
@@ -536,32 +542,33 @@ export default function Breeding() {
             {step === 2 && (
               <form onSubmit={handleConfirm} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                 <div className="glass-card">
-                  <h3 style={{ fontSize: 17, fontWeight: 800, marginBottom: 16 }}>📋 Confirm AI Insemination Event</h3>
+                  <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 16 }}>📋 Confirm Insemination Procedure</h3>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                    <div style={{ padding: '12px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: 10, border: '1px solid var(--color-border)' }}>
-                      <div style={{ fontSize: 11, color: 'var(--color-text-muted)', fontWeight: 700 }}>SELECTED CATTLE</div>
-                      <div style={{ fontWeight: 800, fontSize: 15, color: 'var(--color-primary-bright)', marginTop: 2 }}>
+                    <div style={{ padding: '14px 16px', background: 'rgba(217,201,163,0.04)', borderRadius: 10, border: '1px solid var(--color-border)' }}>
+                      <div style={{ fontSize: 11.5, color: 'var(--color-husk-tan)', fontWeight: 700 }}>SELECTED CATTLE EAR TAG</div>
+                      <div className="ear-tag-badge" style={{ marginTop: 6 }}>
+                        <span className="ear-tag-rivet" />
                         {selectedCow?.tagNumber || `ID: ${form.cowId}`}
                       </div>
                     </div>
 
-                    <div style={{ padding: '12px 16px', background: 'rgba(255,255,255,0.03)', borderRadius: 10, border: '1px solid var(--color-border)' }}>
-                      <div style={{ fontSize: 11, color: 'var(--color-text-muted)', fontWeight: 700 }}>SEMEN STRAW BATCH</div>
-                      <div style={{ fontWeight: 800, fontSize: 15, color: 'var(--color-accent-bright)', marginTop: 2 }}>
+                    <div style={{ padding: '14px 16px', background: 'rgba(217,201,163,0.04)', borderRadius: 10, border: '1px solid var(--color-border)' }}>
+                      <div style={{ fontSize: 11.5, color: 'var(--color-husk-tan)', fontWeight: 700 }}>SEMEN STRAW BATCH</div>
+                      <div className="font-mono-tabular" style={{ fontWeight: 800, fontSize: 16, color: 'var(--color-marigold)', marginTop: 4 }}>
                         {selectedStraw?.batchNo ? `${selectedStraw.breed?.replace(/_/g, ' ')} (Batch #${selectedStraw.batchNo})` : `ID: ${form.semenStrawId}`}
                       </div>
                     </div>
 
                     <div className="form-group">
                       <label className="form-label">Insemination Date</label>
-                      <input type="date" className="input" value={form.inseminationDate}
+                      <input type="date" className="input font-mono-tabular" value={form.inseminationDate}
                         onChange={e => setForm(p => ({ ...p, inseminationDate: e.target.value }))} />
                     </div>
 
                     {result?.status === 'OVERRIDE' && (
                       <div className="form-group">
-                        <label className="form-label" style={{ color: 'var(--color-accent-bright)' }}>Technician Override Rationale *</label>
+                        <label className="form-label" style={{ color: 'var(--color-marigold)' }}>Technician Override Rationale *</label>
                         <input className="input" placeholder="e.g. Farmer requested crossbreed — approved by Dr. Patel"
                           value={form.overrideReason}
                           onChange={e => setForm(p => ({ ...p, overrideReason: e.target.value }))} />
@@ -571,11 +578,11 @@ export default function Breeding() {
                 </div>
 
                 <div style={{ display: 'flex', gap: 12 }}>
-                  <button type="button" className="btn btn-secondary" style={{ flex: 1, borderRadius: 'var(--radius-sm)' }} onClick={() => setStep(1)}>
+                  <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setStep(1)}>
                     ← Back
                   </button>
-                  <button type="submit" className="btn btn-primary" style={{ flex: 1, borderRadius: 'var(--radius-sm)' }} disabled={confirming}>
-                    {confirming ? <span className="spinner" /> : '✅ Record Insemination Event'}
+                  <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={confirming}>
+                    {confirming ? <span className="spinner" /> : 'Confirm Insemination'}
                   </button>
                 </div>
               </form>
@@ -584,14 +591,14 @@ export default function Breeding() {
             {/* Right Result Display */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               <div className="glass-card">
-                <h3 style={{ fontSize: 16, fontWeight: 800, marginBottom: 16 }}>Genetic Match Engine Result</h3>
+                <h3 style={{ fontSize: 17, fontWeight: 800, marginBottom: 16 }}>Genetic Match Engine Result</h3>
                 {result ? (
                   <CompatBanner result={result} />
                 ) : (
-                  <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--color-text-muted)' }}>
+                  <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--color-husk-tan)' }}>
                     <div style={{ fontSize: 44, marginBottom: 12 }}>🧬</div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--color-text)' }}>AI Engine Standing By</div>
-                    <p style={{ fontSize: 13, marginTop: 4 }}>Select a cow and semen straw to trigger real-time compatibility matrix analysis.</p>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-dairy-white)' }}>AI Engine Standing By</div>
+                    <p style={{ fontSize: 13.5, marginTop: 4 }}>Select a cow and semen straw to trigger real-time compatibility matrix analysis.</p>
                   </div>
                 )}
               </div>

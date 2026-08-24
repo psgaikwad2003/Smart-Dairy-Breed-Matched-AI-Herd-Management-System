@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { cowApi } from '../api/client';
 import { useAuth } from '../context/AuthContext';
-import { Plus, Search, Tag, RefreshCw, Filter, Sparkles, X, ChevronRight } from 'lucide-react';
+import { Plus, Search, RefreshCw, Filter, Sparkles, X, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const STATUS_BADGES = {
@@ -43,7 +43,7 @@ export default function Herd() {
     e.preventDefault();
     try {
       await cowApi.create(newCow);
-      toast.success('New cattle registered successfully! 🐄');
+      toast.success('New cattle ear-tag registered successfully! 🐄');
       setShowAdd(false);
       loadCows();
     } catch (err) {
@@ -58,14 +58,14 @@ export default function Herd() {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
             <span className="badge badge-emerald">
-              <Sparkles size={11} /> Herd Management
+              <Sparkles size={11} /> Registered Cattle Directory
             </span>
           </div>
-          <h1 style={{ fontSize: 26, fontWeight: 800 }}>
-            Registered Cattle Herd ({cows.length})
+          <h1 style={{ fontSize: 28, fontWeight: 800 }}>
+            Herd Ear-Tag Profiles ({cows.length})
           </h1>
-          <p style={{ fontSize: 13.5, color: 'var(--color-text-muted)', marginTop: 2 }}>
-            Manage individual cow profiles, lactation status, and historical milk yields.
+          <p style={{ fontSize: 14.5, color: 'var(--color-husk-tan)', marginTop: 2 }}>
+            Field-tested cattle ear-tag tracking, lactation status, and yield history.
           </p>
         </div>
 
@@ -73,32 +73,32 @@ export default function Herd() {
           <button className="btn btn-secondary" onClick={loadCows} style={{ borderRadius: 'var(--radius-pill)' }}>
             <RefreshCw size={14} /> Refresh
           </button>
-          <button className="btn btn-primary" onClick={() => setShowAdd(true)} style={{ borderRadius: 'var(--radius-pill)' }}>
-            <Plus size={15} /> Register New Cow
+          <button className="btn btn-accent" onClick={() => setShowAdd(true)} style={{ borderRadius: 'var(--radius-pill)' }}>
+            <Plus size={16} /> Register New Cattle Tag
           </button>
         </div>
       </div>
 
       {/* Filter & Search Toolbar */}
-      <div className="glass-card" style={{ padding: '14px 20px', marginBottom: 24 }}>
+      <div className="glass-card" style={{ padding: '16px 20px', marginBottom: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-          <div className="input-wrapper" style={{ width: 360 }}>
-            <Search size={16} className="input-icon" />
+          <div className="input-wrapper" style={{ width: 380 }}>
+            <Search size={16} className="input-icon" style={{ color: 'var(--color-marigold)' }} />
             <input
-              type="text" className="input input-with-icon"
-              placeholder="Search tag number (e.g. TN-GJ-001) or breed..."
+              type="text" className="input input-with-icon font-mono-tabular"
+              placeholder="Search ear-tag (e.g. TN-GJ-001) or breed..."
               value={search} onChange={e => setSearch(e.target.value)}
               style={{ borderRadius: 'var(--radius-pill)' }}
             />
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Filter size={15} style={{ color: 'var(--color-text-muted)' }} />
+            <Filter size={15} style={{ color: 'var(--color-husk-tan)' }} />
             <select
               className="select"
               value={selectedBreed}
               onChange={e => setSelectedBreed(e.target.value)}
-              style={{ width: 180, height: 38, borderRadius: 'var(--radius-pill)' }}
+              style={{ width: 200, height: 40, borderRadius: 'var(--radius-pill)' }}
             >
               <option value="ALL">All Breeds ({cows.length})</option>
               {BREEDS.map(b => <option key={b} value={b}>{b.replace(/_/g, ' ')}</option>)}
@@ -112,11 +112,11 @@ export default function Herd() {
         <table className="pro-table">
           <thead>
             <tr>
-              <th>Tag Number</th>
-              <th>Breed</th>
+              <th>Cattle Ear Tag ID</th>
+              <th>Breed Standard</th>
               <th>Lactation Status</th>
               <th>Lactation Count</th>
-              <th>Current Milk Yield</th>
+              <th>Current Daily Yield</th>
               <th>Date of Birth</th>
               <th>Actions</th>
             </tr>
@@ -132,32 +132,23 @@ export default function Herd() {
               ))
             ) : filtered.length === 0 ? (
               <tr>
-                <td colSpan={7} style={{ textAlign: 'center', padding: '50px 20px', color: 'var(--color-text-muted)' }}>
+                <td colSpan={7} style={{ textAlign: 'center', padding: '50px 20px', color: 'var(--color-husk-tan)' }}>
                   <div style={{ fontSize: 36, marginBottom: 8 }}>🐄</div>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text)' }}>No cattle profiles found</div>
-                  <p style={{ fontSize: 13, marginTop: 4 }}>Try clearing search filters or add a new cattle record.</p>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-dairy-white)' }}>No cattle records found</div>
+                  <p style={{ fontSize: 13.5, marginTop: 4 }}>Try clearing search filters or register a new cattle tag.</p>
                 </td>
               </tr>
             ) : (
               filtered.map(cow => (
                 <tr key={cow.id}>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <div style={{
-                        width: 32, height: 32, borderRadius: 8,
-                        background: 'rgba(16,185,129,0.12)', color: 'var(--color-primary-bright)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontWeight: 700, fontSize: 12
-                      }}>
-                        <Tag size={14} />
-                      </div>
-                      <span style={{ fontWeight: 700, fontFamily: 'var(--font-display)', fontSize: 14, color: 'var(--color-text)' }}>
-                        {cow.tagNumber}
-                      </span>
+                  <td className="mono-col">
+                    <div className="ear-tag-badge">
+                      <span className="ear-tag-rivet" />
+                      {cow.tagNumber}
                     </div>
                   </td>
                   <td>
-                    <span style={{ color: 'var(--color-text-dim)', fontWeight: 600 }}>
+                    <span style={{ color: 'var(--color-dairy-white)', fontWeight: 600 }}>
                       {cow.breed?.replace(/_/g, ' ')}
                     </span>
                   </td>
@@ -166,25 +157,23 @@ export default function Herd() {
                       {cow.status}
                     </span>
                   </td>
-                  <td>
-                    <span style={{ color: 'var(--color-text-dim)', fontWeight: 600 }}>
-                      {cow.lactationCount ?? '—'}
-                    </span>
+                  <td className="mono-col">
+                    {cow.lactationCount ?? '—'}
                   </td>
-                  <td>
+                  <td className="mono-col">
                     {cow.currentMilkYieldLitres ? (
-                      <span style={{ color: 'var(--color-primary-bright)', fontWeight: 700 }}>
+                      <span style={{ color: 'var(--color-marigold)', fontWeight: 800 }}>
                         {cow.currentMilkYieldLitres} L/day
                       </span>
                     ) : (
                       <span style={{ color: 'var(--color-text-muted)' }}>—</span>
                     )}
                   </td>
-                  <td style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>
+                  <td className="mono-col" style={{ color: 'var(--color-husk-tan)', fontSize: 13.5 }}>
                     {cow.dateOfBirth || '—'}
                   </td>
                   <td>
-                    <button className="btn btn-ghost" style={{ fontSize: 12, padding: '4px 10px', borderRadius: 6 }}
+                    <button className="btn btn-ghost" style={{ fontSize: 12.5, padding: '4px 10px' }}
                       onClick={() => toast(`Viewing AI history for ${cow.tagNumber}`, { icon: '🧬' })}>
                       AI History <ChevronRight size={13} />
                     </button>
@@ -201,7 +190,7 @@ export default function Herd() {
         <div className="pro-modal-backdrop" onClick={() => setShowAdd(false)}>
           <div className="pro-modal-content" onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-              <h2 style={{ fontSize: 20, fontWeight: 800 }}>🐄 Register Cattle Profile</h2>
+              <h2 style={{ fontSize: 22, fontWeight: 800 }}>🐄 Register Cattle Ear-Tag</h2>
               <button className="btn btn-ghost btn-icon" onClick={() => setShowAdd(false)}>
                 <X size={18} />
               </button>
@@ -210,7 +199,7 @@ export default function Herd() {
             <form onSubmit={handleAddCow} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div className="form-group">
                 <label className="form-label">Ear Tag ID / Number *</label>
-                <input className="input" placeholder="e.g. KRN-HF-001" required
+                <input className="input font-mono-tabular" placeholder="e.g. TN-GJ-001" required
                   value={newCow.tagNumber} onChange={e => setNewCow(p => ({ ...p, tagNumber: e.target.value }))} />
               </div>
 
@@ -231,11 +220,11 @@ export default function Herd() {
               </div>
 
               <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
-                <button type="button" className="btn btn-secondary" style={{ flex: 1, borderRadius: 'var(--radius-sm)' }} onClick={() => setShowAdd(false)}>
+                <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setShowAdd(false)}>
                   Cancel
                 </button>
-                <button type="submit" className="btn btn-primary" style={{ flex: 1, borderRadius: 'var(--radius-sm)' }}>
-                  Save Cow Profile
+                <button type="submit" className="btn btn-accent" style={{ flex: 1 }}>
+                  Save Ear Tag Profile
                 </button>
               </div>
             </form>

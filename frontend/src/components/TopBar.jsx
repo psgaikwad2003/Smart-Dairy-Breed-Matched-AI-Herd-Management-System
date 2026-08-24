@@ -1,12 +1,9 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import {
-  Search, Bell, Sparkles, Plus, ShieldCheck,
-  Calendar, Layers, CheckCircle2
-} from 'lucide-react';
+import { Search, Bell, Plus, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-export default function TopBar({ unreadCount, onQuickAction }) {
+export default function TopBar({ unreadCount }) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
@@ -20,23 +17,23 @@ export default function TopBar({ unreadCount, onQuickAction }) {
 
   return (
     <header className="pro-topbar">
-      {/* Search Input Bar */}
-      <form onSubmit={handleSearchSubmit} style={{ width: 340 }}>
+      {/* Ear-Tag Quick Search Bar */}
+      <form onSubmit={handleSearchSubmit} style={{ width: 360 }}>
         <div className="input-wrapper">
-          <Search size={16} className="input-icon" />
+          <Search size={16} className="input-icon" style={{ color: 'var(--color-marigold)' }} />
           <input
             type="text"
-            className="input input-with-icon"
-            placeholder="Search cows (e.g., KRN-HF-001), breed, or straws..."
+            className="input input-with-icon font-mono-tabular"
+            placeholder="Search ear-tag ID (e.g. TN-GJ-001) or breed..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            style={{ height: 38, fontSize: 13, background: 'rgba(255,255,255,0.03)', borderRadius: 'var(--radius-pill)' }}
+            style={{ height: 40, fontSize: 13.5, background: 'rgba(251,247,238,0.04)', borderRadius: 'var(--radius-pill)' }}
           />
           <span style={{
-            position: 'absolute', right: 10,
+            position: 'absolute', right: 12,
             fontSize: 10.5, fontWeight: 700,
-            color: 'var(--color-text-muted)',
-            background: 'rgba(255,255,255,0.06)',
+            color: 'var(--color-husk-tan)',
+            background: 'rgba(217,201,163,0.1)',
             padding: '2px 6px', borderRadius: 4,
             border: '1px solid var(--color-border)',
           }}>
@@ -47,69 +44,70 @@ export default function TopBar({ unreadCount, onQuickAction }) {
 
       {/* Right Action Bar & Status */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-        {/* System Status Pill */}
+        {/* System Healthy Status Pill */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 7,
-          fontSize: 12, fontWeight: 600, color: 'var(--color-primary-bright)',
-          background: 'rgba(16,185,129,0.08)', padding: '5px 12px',
-          borderRadius: 'var(--radius-pill)', border: '1px solid rgba(16,185,129,0.25)',
+          fontSize: 12.5, fontWeight: 700, color: '#72b276',
+          background: 'rgba(78, 122, 81, 0.18)', padding: '6px 14px',
+          borderRadius: 'var(--radius-pill)', border: '1px solid var(--color-status-match)',
         }}>
-          <CheckCircle2 size={13} />
+          <CheckCircle2 size={14} />
           <span>System Healthy</span>
         </div>
 
         {/* Quick Action Button */}
         <button
-          className="btn btn-primary"
+          className="btn btn-accent"
           onClick={() => navigate('/breeding')}
-          style={{ height: 36, padding: '0 14px', fontSize: 12.5, borderRadius: 'var(--radius-pill)' }}
+          style={{ height: 38, padding: '0 16px', fontSize: 13, borderRadius: 'var(--radius-pill)' }}
         >
-          <Plus size={15} /> New AI Record
+          <Plus size={16} /> Record Insemination
         </button>
 
         {/* Notifications Icon Button */}
         <button
           onClick={() => navigate('/alerts')}
           style={{
-            position: 'relative', width: 38, height: 38,
-            borderRadius: '50%', background: 'rgba(255,255,255,0.04)',
-            border: '1px solid var(--color-border)', color: 'var(--color-text-dim)',
+            position: 'relative', width: 40, height: 40,
+            borderRadius: '50%', background: 'rgba(251,247,238,0.04)',
+            border: '1px solid var(--color-border)', color: 'var(--color-dairy-white)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer', transition: 'var(--transition-fast)',
           }}
-          onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--color-primary-bright)'; e.currentTarget.style.color = 'var(--color-primary-bright)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.color = 'var(--color-text-dim)'; }}
+          onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--color-marigold)'; e.currentTarget.style.color = 'var(--color-marigold)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.color = 'var(--color-dairy-white)'; }}
         >
           <Bell size={18} />
           {unreadCount > 0 && (
             <span style={{
               position: 'absolute', top: -2, right: -2,
-              width: 16, height: 16, borderRadius: '50%',
-              background: 'var(--color-rose)', color: 'white',
-              fontSize: 10, fontWeight: 800,
+              width: 18, height: 18, borderRadius: '50%',
+              background: 'var(--color-status-mismatch)', color: 'white',
+              fontSize: 10.5, fontWeight: 800,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              border: '2px solid #060a08',
+              border: '2px solid #1C2B33',
             }}>
               {unreadCount > 9 ? '•' : unreadCount}
             </span>
           )}
         </button>
 
-        {/* User Pill */}
+        {/* Technician Profile Pill */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 10,
-          padding: '4px 10px 4px 6px', borderRadius: 'var(--radius-pill)',
-          background: 'rgba(255,255,255,0.03)', border: '1px solid var(--color-border)',
+          padding: '5px 12px 5px 6px', borderRadius: 'var(--radius-pill)',
+          background: 'rgba(251,247,238,0.04)', border: '1px solid var(--color-border)',
         }}>
           <div style={{
-            width: 30, height: 30, borderRadius: '50%',
-            background: 'linear-gradient(135deg, var(--color-primary), var(--color-primary-dark))',
+            width: 32, height: 32, borderRadius: '50%',
+            background: 'var(--color-pasture)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontWeight: 800, fontSize: 13, color: '#03180e',
+            fontWeight: 800, fontSize: 13, color: 'var(--color-marigold)',
+            border: '1.5px solid var(--color-marigold)'
           }}>
             {(user?.fullName || 'U')[0]}
           </div>
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text)' }}>
+          <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--color-dairy-white)' }}>
             {user?.fullName?.split(' ')[0] || 'User'}
           </span>
         </div>

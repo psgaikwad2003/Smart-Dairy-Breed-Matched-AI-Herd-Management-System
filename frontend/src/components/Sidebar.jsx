@@ -2,8 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, PawPrint, FlaskConical, Dna, BarChart3,
-  Bell, Users, LogOut, Wifi, WifiOff, Droplets, Sparkles,
-  ChevronRight, ShieldCheck
+  Bell, Users, LogOut, Wifi, WifiOff, Droplets, ShieldCheck
 } from 'lucide-react';
 
 const mainNav = [
@@ -12,7 +11,7 @@ const mainNav = [
 
 const herdNav = [
   { to: '/herd',      icon: PawPrint,        label: 'My Herd' },
-  { to: '/breeding',  icon: Dna,             label: 'Breeding AI' },
+  { to: '/breeding',  icon: Dna,             label: 'Breeding AI & Sires' },
   { to: '/milk',      icon: Droplets,        label: 'Milk Yield Logs' },
 ];
 
@@ -45,7 +44,7 @@ export default function Sidebar({ connected, unreadCount }) {
           padding: '0 14px 6px',
           fontSize: 10.5,
           fontWeight: 700,
-          color: 'var(--color-text-muted)',
+          color: 'var(--color-husk-tan)',
           textTransform: 'uppercase',
           letterSpacing: '0.08em',
         }}>
@@ -57,10 +56,10 @@ export default function Sidebar({ connected, unreadCount }) {
           <NavLink key={to} to={to} end={to === '/'} style={({ isActive }) => ({
             display: 'flex', alignItems: 'center', gap: 11,
             padding: '10px 14px', borderRadius: 'var(--radius-sm)',
-            fontSize: 13.5, fontWeight: isActive ? 600 : 500,
-            color: isActive ? 'var(--color-primary-bright)' : 'var(--color-text-dim)',
-            background: isActive ? 'linear-gradient(90deg, rgba(16,185,129,0.14) 0%, rgba(16,185,129,0.04) 100%)' : 'transparent',
-            borderLeft: isActive ? '3px solid var(--color-primary-bright)' : '3px solid transparent',
+            fontSize: 14, fontWeight: isActive ? 700 : 500,
+            color: isActive ? 'var(--color-marigold)' : 'var(--color-dairy-white)',
+            background: isActive ? 'linear-gradient(90deg, rgba(232,169,62,0.18) 0%, rgba(47,75,60,0.1) 100%)' : 'transparent',
+            borderLeft: isActive ? '3.5px solid var(--color-marigold)' : '3.5px solid transparent',
             transition: 'var(--transition-fast)',
             textDecoration: 'none',
             position: 'relative',
@@ -80,47 +79,42 @@ export default function Sidebar({ connected, unreadCount }) {
 
   return (
     <aside className="pro-sidebar">
-      {/* Brand Header */}
+      {/* Ear-Tag Styled Brand Header */}
       <div style={{
-        padding: '22px 20px 18px',
+        padding: '20px 18px 16px',
         borderBottom: '1px solid var(--color-border)',
         display: 'flex', alignItems: 'center', gap: 12,
+        background: 'rgba(47, 75, 60, 0.4)'
       }}>
-        <div style={{
-          width: 40, height: 40,
-          background: 'linear-gradient(135deg, #10b981 0%, #047857 100%)',
-          borderRadius: 12,
-          display: 'flex', alignItems: 'center', justifyCenter: 'center',
-          fontSize: 22,
-          boxShadow: '0 0 20px rgba(16, 185, 129, 0.35)',
-          border: '1px solid rgba(52, 211, 153, 0.4)',
-        }}>
-          🐄
+        <div className="milk-drop-frame" style={{ width: 44, height: 44, flexShrink: 0 }}>
+          <div className="milk-drop-frame-inner" style={{ fontSize: 20 }}>
+            🐄
+          </div>
         </div>
         <div>
-          <div className="text-gradient" style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 17, lineHeight: 1.1 }}>
+          <div className="font-display" style={{ fontWeight: 800, fontSize: 18, color: 'var(--color-dairy-white)', lineHeight: 1.1 }}>
             Smart Dairy
           </div>
-          <div style={{ fontSize: 10, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 3 }}>
-            Breed AI Platform
+          <div style={{ fontSize: 10.5, color: 'var(--color-marigold)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: 3, fontWeight: 700 }}>
+            Breed-Matched AI
           </div>
         </div>
       </div>
 
-      {/* Live Connection Status */}
+      {/* Field Connection Status */}
       <div style={{ padding: '12px 18px 8px' }}>
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '8px 12px', borderRadius: 'var(--radius-xs)',
-          background: 'rgba(255,255,255,0.025)',
+          background: 'rgba(251, 247, 238, 0.03)',
           border: '1px solid var(--color-border)',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 600, color: 'var(--color-text-dim)' }}>
-            <span className={`pulse-dot ${connected ? 'pulse-dot-emerald' : 'pulse-dot-rose'}`} />
-            {connected ? 'WebSocket Live' : 'System Offline'}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 600, color: 'var(--color-dairy-white)' }}>
+            <span className={`milk-drop-dot ${connected ? 'milk-drop-full' : 'milk-drop-empty'}`} />
+            {connected ? 'Real-Time Sync' : 'Offline Mode'}
           </div>
-          <div style={{ fontSize: 11, color: connected ? 'var(--color-primary-bright)' : 'var(--color-text-muted)' }}>
-            {connected ? <Wifi size={13} /> : <WifiOff size={13} />}
+          <div style={{ fontSize: 11, color: connected ? 'var(--color-marigold)' : 'var(--color-text-muted)' }}>
+            {connected ? <Wifi size={14} /> : <WifiOff size={14} />}
           </div>
         </div>
       </div>
@@ -135,29 +129,29 @@ export default function Sidebar({ connected, unreadCount }) {
         {user?.role === 'ADMIN' && renderNavGroup('Administration', adminNav)}
       </nav>
 
-      {/* User Profile & Sign Out Footer */}
+      {/* Technician / Vet Profile Footer */}
       <div style={{
         padding: '14px 16px',
         borderTop: '1px solid var(--color-border)',
-        background: 'rgba(0,0,0,0.2)',
+        background: 'rgba(28, 43, 51, 0.8)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{
-              width: 34, height: 34, borderRadius: '50%',
-              background: 'linear-gradient(135deg, var(--color-accent), var(--color-accent-dark))',
+              width: 36, height: 36, borderRadius: '50%',
+              background: 'var(--color-pasture)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontWeight: 800, fontSize: 14, color: '#000',
-              border: '2px solid rgba(251, 191, 36, 0.4)',
+              fontWeight: 800, fontSize: 14, color: 'var(--color-marigold)',
+              border: '2px solid var(--color-marigold)',
             }}>
               {(user?.fullName || user?.name || 'U')[0]}
             </div>
             <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text)', lineHeight: 1.1 }}>
+              <div style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--color-dairy-white)', lineHeight: 1.1 }}>
                 {user?.fullName || user?.name || 'User'}
               </div>
-              <div style={{ fontSize: 10.5, color: 'var(--color-text-muted)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
-                <ShieldCheck size={11} style={{ color: 'var(--color-primary-bright)' }} />
+              <div style={{ fontSize: 11, color: 'var(--color-marigold)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 4, fontWeight: 600 }}>
+                <ShieldCheck size={12} style={{ color: 'var(--color-marigold)' }} />
                 {user?.role?.replace('_', ' ')}
               </div>
             </div>
@@ -165,7 +159,7 @@ export default function Sidebar({ connected, unreadCount }) {
         </div>
 
         <button className="btn btn-ghost" onClick={handleLogout}
-          style={{ width: '100%', justifyContent: 'center', gap: 8, fontSize: 12.5, padding: '7px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.03)' }}>
+          style={{ width: '100%', justifyContent: 'center', gap: 8, fontSize: 13, padding: '8px 10px', borderRadius: 8, background: 'rgba(251,247,238,0.04)' }}>
           <LogOut size={14} /> Sign Out Account
         </button>
       </div>
