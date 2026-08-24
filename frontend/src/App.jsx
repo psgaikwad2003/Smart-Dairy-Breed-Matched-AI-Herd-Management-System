@@ -12,6 +12,8 @@ import Analytics from './pages/Analytics';
 import Alerts from './pages/Alerts';
 import Farmers from './pages/Farmers';
 import Settings from './pages/Settings';
+import FeedOptimizer from './pages/FeedOptimizer';
+import HealthTracker from './pages/HealthTracker';
 
 function ProtectedRoute({ children }) {
   const { user } = useAuth();
@@ -31,14 +33,17 @@ function AppRoutes() {
         </ProtectedRoute>
       }>
         <Route index element={<Dashboard />} />
-        <Route path="herd"      element={<Herd />} />
-        <Route path="breeding"  element={<Breeding />} />
-        <Route path="inventory" element={<Inventory />} />
-        <Route path="milk"      element={<Milk />} />
-        <Route path="analytics" element={<Analytics />} />
-        <Route path="alerts"    element={<Alerts />} />
-        <Route path="farmers"   element={<Farmers />} />
-        <Route path="settings"  element={<Settings />} />
+        <Route path="herd font-mono-tabular" element={<Herd />} />
+        <Route path="herd"            element={<Herd />} />
+        <Route path="breeding"        element={<Breeding />} />
+        <Route path="inventory"       element={<Inventory />} />
+        <Route path="milk"            element={<Milk />} />
+        <Route path="analytics"       element={<Analytics />} />
+        <Route path="alerts"          element={<Alerts />} />
+        <Route path="farmers"         element={<Farmers />} />
+        <Route path="feed-optimizer"  element={<FeedOptimizer />} />
+        <Route path="health-tracker"  element={<HealthTracker />} />
+        <Route path="settings"        element={<Settings />} />
       </Route>
 
       {/* Catch-all */}

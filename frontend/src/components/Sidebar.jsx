@@ -2,31 +2,34 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, PawPrint, FlaskConical, Dna, BarChart3,
-  Bell, Users, LogOut, Wifi, WifiOff, Droplets, ShieldCheck, Settings as SettingsIcon
+  Bell, Users, LogOut, Wifi, WifiOff, Droplets, ShieldCheck,
+  Settings as SettingsIcon, Utensils, HeartPulse
 } from 'lucide-react';
 
 const mainNav = [
-  { to: '/',          icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/',              icon: LayoutDashboard, label: 'Dashboard' },
 ];
 
 const herdNav = [
-  { to: '/herd',      icon: PawPrint,        label: 'My Cattle Herd' },
-  { to: '/breeding',  icon: Dna,             label: 'Sire Match & AI' },
-  { to: '/milk',      icon: Droplets,        label: 'Milk Yield Logs' },
+  { to: '/herd',          icon: PawPrint,        label: 'My Cattle Herd' },
+  { to: '/breeding',      icon: Dna,             label: 'Sire Match & AI' },
+  { to: '/milk',          icon: Droplets,        label: 'Milk Yield Logs' },
+  { to: '/feed-optimizer',icon: Utensils,        label: 'Feed & Profit Optimizer' },
+  { to: '/health-tracker',icon: HeartPulse,      label: 'Heat & Vaccine Advisory' },
 ];
 
 const supplyNav = [
-  { to: '/inventory', icon: FlaskConical,    label: 'Semen Straw Stock' },
+  { to: '/inventory',     icon: FlaskConical,    label: 'Semen Straw Stock' },
 ];
 
 const insightsNav = [
-  { to: '/analytics', icon: BarChart3,       label: 'Analytics Reports' },
-  { to: '/alerts',    icon: Bell,            label: 'System Alerts' },
+  { to: '/analytics',     icon: BarChart3,       label: 'Analytics Reports' },
+  { to: '/alerts',        icon: Bell,            label: 'System Alerts' },
 ];
 
 const adminNav = [
-  { to: '/farmers',   icon: Users,           label: 'Farmer Directory' },
-  { to: '/settings',  icon: SettingsIcon,    label: 'System Preferences' },
+  { to: '/farmers',       icon: Users,           label: 'Farmer Directory' },
+  { to: '/settings',      icon: SettingsIcon,    label: 'System Preferences' },
 ];
 
 export default function Sidebar({ connected, unreadCount }) {
