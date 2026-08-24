@@ -75,9 +75,20 @@ export const inventoryApi = {
   restock:          (id, qty)=> api.patch(`/inventory/straws/${id}/restock`, null, { params: { quantity: qty } }),
 };
 
+// ---- Bulls & Genetic Sire Recommendation Engine ----
+export const bullApi = {
+  getAll:           ()       => api.get('/bulls'),
+  getById:          (id)     => api.get(`/bulls/${id}`),
+  getGeneticProfile:(id)     => api.get(`/bulls/${id}/genetic-profile`),
+  getRecommendations:(cowId, a2a2Only=false) =>
+    api.get('/bulls/recommend', { params: { cowId, a2a2Only } }),
+  getPerformance:   ()       => api.get('/analytics/bull-performance'),
+};
+
 // ---- Breeding ----
 export const breedingApi = {
   validate:         (data)   => api.post('/breeding/validate', data),
+  simulate:         (data)   => api.post('/breeding/simulate', data),
   confirm:          (data)   => api.post('/breeding/confirm', data),
   getCowHistory:    (cowId)  => api.get(`/breeding/cow/${cowId}/history`),
   getAll:           (params) => api.get('/breeding/records', { params }),

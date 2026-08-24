@@ -58,6 +58,19 @@ public class Cow {
     @Builder.Default
     private CowStatus status = CowStatus.ACTIVE;
 
+    // ---- Genetic Merit & Lineage fields ----
+
+    @Column(name = "exotic_blood_pct", precision = 5, scale = 2)
+    @Builder.Default
+    private BigDecimal exoticBloodPct = BigDecimal.ZERO;
+
+    @Column(name = "lineage_bull_ids", length = 500)
+    private String lineageBullIds;
+
+    @Column(name = "last_yield_kg_per_day", precision = 6, scale = 2)
+    @Builder.Default
+    private BigDecimal lastYieldKgPerDay = BigDecimal.ZERO;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

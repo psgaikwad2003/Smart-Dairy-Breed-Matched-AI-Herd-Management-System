@@ -1,10 +1,9 @@
 package com.smartdairy.breeding.controller;
 
-import com.smartdairy.breeding.dto.BreedValidationRequest;
-import com.smartdairy.breeding.dto.BreedValidationResponse;
-import com.smartdairy.breeding.dto.BreedingConfirmRequest;
+import com.smartdairy.breeding.dto.*;
 import com.smartdairy.breeding.entity.BreedingRecord;
 import com.smartdairy.breeding.service.BreedingService;
+import com.smartdairy.breeding.service.SireRecommendationEngine;
 import com.smartdairy.common.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -21,9 +20,10 @@ import java.util.List;
 /**
  * REST controller for the Breeding AI workflow:
  * 1. Validate breed compatibility
- * 2. Confirm insemination (creates BreedingRecord, decrements straw stock)
- * 3. Update outcome (CONFIRMED_PREGNANT / FAILED)
- * 4. Query history and upcoming calvings
+ * 2. Simulate sire pairing genetic traits (New Engine)
+ * 3. Confirm insemination (creates BreedingRecord, decrements straw stock)
+ * 4. Update outcome (CONFIRMED_PREGNANT / FAILED)
+ * 5. Query history and upcoming calvings
  */
 @RestController
 @RequestMapping("/api/breeding")
@@ -33,6 +33,7 @@ import java.util.List;
 public class BreedingController {
 
     private final BreedingService breedingService;
+    private final SireRecommendationEngine recommendationEngine;
 
     /**
      * POST /api/breeding/validate
@@ -49,6 +50,23 @@ public class BreedingController {
             @Valid @RequestBody BreedValidationRequest request) {
         BreedValidationResponse result = breedingService.validateBreed(request);
         return ResponseEntity.ok(ApiResponse.success(result, "Breed validation complete"));
+    }
+
+    /**
+     * POST /api/breeding/simulate
+     * Simulates expected calf genetic traits (milk yield potential, exotic blood %, inbreeding)
+     * before confirming insemination.
+     */
+    @PostMapping("/simulate")
+    @Operation(
+        summary = "Simulate Sire Insemination Pairing",
+        description = "Predicts expected calf yield potential, exotic blood %, A2A2 status, and inbreeding coefficient prior to procedure."
+    )
+    @PreAuthorize("hasAnyRole('ADMIN', 'VET', 'AI_TECHNICIAN')")
+    public ResponseEntity<ApiResponse<SireSimulationResponseDTO>> simulatePairing(
+            @Valid @RequestBody SireSimulationRequestDTO request) {
+        SireSimulationResponseDTO result = recommendationEngine.simulateSirePairing(request);
+        return ResponseEntity.ok(ApiResponse.success(result, "Sire pairing simulation complete"));
     }
 
     /**
