@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: smartdairy-config
+data:
+  SPRING_PROFILES_ACTIVE: "prod"
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://smartdairy-postgres:5432/smartdairy"
+  SPRING_DATA_REDIS_HOST: "smartdairy-redis"
+  SPRING_DATA_REDIS_PORT: "6379"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: smartdairy-secrets
+type: Opaque
+stringData:
+  SPRING_DATASOURCE_USERNAME: "smartdairy"
+  SPRING_DATASOURCE_PASSWORD: "CHANGE_ME_IN_PROD"
+  JWT_SECRET: "CHANGE_ME_TO_A_SECURE_256_BIT_KEY_IN_PRODUCTION"
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: smartdairy-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: smartdairy.local
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: smartdairy-backend
+                port:
+                  number: 8080
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: smartdairy-frontend
+                port:
+                  number: 80

@@ -1,0 +1,71 @@
+# ===================================================================
+# Smart Dairy — Default Application Configuration
+# ===================================================================
+
+spring:
+  application:
+    name: smart-dairy
+
+  # JPA / Hibernate
+  jpa:
+    open-in-view: true
+    hibernate:
+      ddl-auto: validate   # Never auto-DDL in any env; Flyway manages schema
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          time_zone: UTC
+
+  # Flyway
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+  # Jackson
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    default-property-inclusion: non_null
+
+# Server
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+# JWT
+jwt:
+  secret: ${JWT_SECRET:smartdairy-default-dev-secret-key-change-in-prod-minimum-256-bits-long}
+  expiration-ms: 86400000   # 24 hours
+
+# Actuator + Prometheus
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+  metrics:
+    tags:
+      application: smart-dairy
+
+# Swagger / OpenAPI
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+
+# Logging
+logging:
+  level:
+    com.smartdairy: INFO
+    org.springframework.security: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

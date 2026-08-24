@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: smartdairy-backend
+  labels:
+    app: smartdairy
+    component: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: smartdairy
+      component: backend
+  template:
+    metadata:
+      labels:
+        app: smartdairy
+        component: backend
+    spec:
+      containers:
+        - name: backend
+          image: ghcr.io/yourorg/smart-dairy/backend:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: smartdairy-config
+            - secretRef:
+                name: smartdairy-secrets
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: smartdairy-backend
+spec:
+  selector:
+    app: smartdairy
+    component: backend
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: ClusterIP

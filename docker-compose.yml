@@ -1,0 +1,102 @@
+# =============================================
+# Smart Dairy — Docker Compose (Local Dev)
+# =============================================
+# Usage: docker-compose up -d
+# Dashboard: http://localhost:8080/swagger-ui.html
+# pgAdmin:   http://localhost:5050 (admin@smartdairy.com / admin)
+
+version: "3.9"
+
+services:
+  # --- PostgreSQL ---
+  postgres:
+    image: postgres:16-alpine
+    container_name: smartdairy-postgres
+    environment:
+      POSTGRES_DB: smartdairy
+      POSTGRES_USER: smartdairy
+      POSTGRES_PASSWORD: smartdairy_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smartdairy"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # --- Redis ---
+  redis:
+    image: redis:7-alpine
+    container_name: smartdairy-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # --- Backend (Spring Boot) ---
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: smartdairy-backend
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/smartdairy
+      SPRING_DATASOURCE_USERNAME: smartdairy
+      SPRING_DATASOURCE_PASSWORD: smartdairy_dev
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # --- pgAdmin ---
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: smartdairy-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@smartdairy.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+
+  # --- Prometheus ---
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: smartdairy-prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    depends_on:
+      - backend
+
+  # --- Grafana ---
+  grafana:
+    image: grafana/grafana:latest
+    container_name: smartdairy-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+
+volumes:
+  postgres_data:
+  grafana_data:
