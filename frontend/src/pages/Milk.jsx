@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { milkApi, cowApi } from '../api/client';
+import { dynamicStore } from '../api/dynamicStore';
 import { useAuth } from '../context/AuthContext';
-import { Plus, Droplets, Sparkles, X, Activity } from 'lucide-react';
+import { Plus, Droplets, Sparkles, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -18,29 +19,39 @@ export default function Milk() {
   const [form, setForm]       = useState({
     cowId: '', quantityLitres: '', session: 'MORNING',
     date: new Date().toISOString().split('T')[0],
-    fatPercentage: '',
+    fatPercentage: '4.5',
   });
 
-  useEffect(() => {
+  const loadMilkData = () => {
     const farmerId = user?.farmerId;
     Promise.all([
-      farmerId ? cowApi.getByFarmer(farmerId) : cowApi.getAll({ page: 0, size: 50 }),
-      farmerId ? milkApi.getBreedComp(farmerId) : Promise.resolve({ data: { data: [] } }),
+      farmerId ? cowApi.getByFarmer(farmerId) : cowApi.getAll(),
+      milkApi.getBreedComp(farmerId),
     ]).then(([c, b]) => {
-      const cowList = c.data.data?.content || c.data.data || [];
+      const cowList = c.data?.data?.content || c.data?.data || dynamicStore.getCows();
       setCows(cowList);
-      setBreed((b.data.data || []).map(row => ({
+      if (cowList.length > 0 && !form.cowId) {
+        setForm(p => ({ ...p, cowId: String(cowList[0].id) }));
+        setLogs(dynamicStore.getMilkLogs(cowList[0].id));
+      }
+
+      const breedData = (b.data?.data || dynamicStore.getBreedComparison()).map(row => ({
         breed: String(row[0] || '').replace(/_/g, ' '),
         avgLitres: Number(Number(row[1] || 0).toFixed(2)),
-      })));
+      }));
+      setBreed(breedData);
     }).finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(() => {
+    loadMilkData();
+    const unsubscribe = dynamicStore.subscribe(() => loadMilkData());
+    return () => unsubscribe();
+  }, [user]);
 
   const loadLogs = (cowId) => {
     if (!cowId) return;
-    milkApi.getCowHistory(cowId)
-      .then(r => setLogs(r.data.data || []))
-      .catch(() => setLogs([]));
+    setLogs(dynamicStore.getMilkLogs(cowId));
   };
 
   const handleLog = async (e) => {
@@ -51,13 +62,14 @@ export default function Milk() {
         quantityLitres: Number(form.quantityLitres),
         session: form.session,
         date: form.date,
-        fatPercentage: form.fatPercentage ? Number(form.fatPercentage) : null,
+        fatPercentage: form.fatPercentage ? Number(form.fatPercentage) : 4.5,
       });
-      toast.success('Milk yield entry saved successfully! 🥛');
+      toast.success('Milk yield collection entry saved! 🥛');
       setShowLog(false);
+      loadMilkData();
       loadLogs(form.cowId);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to log milk yield');
+      toast.error('Failed to log milk yield');
     }
   };
 
@@ -71,7 +83,7 @@ export default function Milk() {
                 <Sparkles size={11} /> Production Tracker
               </span>
             </div>
-            <h1 style={{ fontSize: 26, fontWeight: 800 }}>Milk Yield Analytics</h1>
+            <h1 style={{ fontSize: 26, fontWeight: 800 }}>Milk Yield Analytics & Collection</h1>
             <p style={{ fontSize: 13.5, color: 'var(--color-text-muted)', marginTop: 2 }}>
               Record daily milk collection sessions and track production performance by breed standard.
             </p>
@@ -88,7 +100,7 @@ export default function Milk() {
         <div className="glass-card" style={{ marginBottom: 28 }}>
           <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
             <Droplets size={18} style={{ color: 'var(--color-sky)' }} />
-            Average Milk Yield Comparison by Breed
+            Average Milk Yield Comparison by Breed Standard
           </h3>
           <ResponsiveContainer width="100%" height={230}>
             <BarChart data={breedComp} margin={{ top: 10, right: 10, bottom: 20, left: -10 }}>
@@ -107,7 +119,7 @@ export default function Milk() {
       <div className="grid-2">
         <div className="glass-card">
           <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 14 }}>Select Cattle Ear Tag</h3>
-          <select className="select" onChange={e => { setForm(p => ({...p, cowId: e.target.value})); loadLogs(e.target.value); }}>
+          <select className="select" value={form.cowId} onChange={e => { setForm(p => ({...p, cowId: e.target.value})); loadLogs(e.target.value); }}>
             <option value="">— Select registered cow —</option>
             {cows.map(c => <option key={c.id} value={c.id}>{c.tagNumber} ({c.breed?.replace(/_/g,' ')})</option>)}
           </select>
@@ -134,8 +146,8 @@ export default function Milk() {
                     </span>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--color-primary-bright)' }}>{l.quantityLitres} L</div>
-                    {l.fatPercentage && <div style={{ fontSize: 11.5, color: 'var(--color-text-muted)' }}>Fat Content: {l.fatPercentage}%</div>}
+                    <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--color-marigold)' }}>{l.quantityLitres} L</div>
+                    {l.fatPercentage && <div style={{ fontSize: 11.5, color: 'var(--color-text-muted)' }}>Fat Content: {l.fatPercentage}% · ₹{l.earnings || Math.round(l.quantityLitres * 48)}</div>}
                   </div>
                 </div>
               ))}
@@ -168,7 +180,7 @@ export default function Milk() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div className="form-group">
                   <label className="form-label">Date</label>
-                  <input type="date" className="input" value={form.date}
+                  <input type="date" className="input font-mono-tabular" value={form.date}
                     onChange={e => setForm(p => ({...p, date: e.target.value}))} />
                 </div>
                 <div className="form-group">
@@ -181,23 +193,23 @@ export default function Milk() {
                 </div>
                 <div className="form-group">
                   <label className="form-label">Total Liters *</label>
-                  <input type="number" step="0.1" min="0" className="input" placeholder="e.g. 14.5" required
+                  <input type="number" step="0.1" min="0" className="input font-mono-tabular" placeholder="e.g. 14.5" required
                     value={form.quantityLitres}
                     onChange={e => setForm(p => ({...p, quantityLitres: e.target.value}))} />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Fat % (Optional)</label>
-                  <input type="number" step="0.1" className="input" placeholder="e.g. 4.5"
+                  <label className="form-label">Fat %</label>
+                  <input type="number" step="0.1" className="input font-mono-tabular" placeholder="e.g. 4.5"
                     value={form.fatPercentage}
                     onChange={e => setForm(p => ({...p, fatPercentage: e.target.value}))} />
                 </div>
               </div>
 
               <div style={{ display: 'flex', gap: 12, marginTop: 10 }}>
-                <button type="button" className="btn btn-secondary" style={{ flex: 1, borderRadius: 'var(--radius-sm)' }} onClick={() => setShowLog(false)}>
+                <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setShowLog(false)}>
                   Cancel
                 </button>
-                <button type="submit" className="btn btn-primary" style={{ flex: 1, borderRadius: 'var(--radius-sm)' }}>
+                <button type="submit" className="btn btn-accent" style={{ flex: 1 }}>
                   Save Collection Record
                 </button>
               </div>

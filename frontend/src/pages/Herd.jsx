@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { cowApi } from '../api/client';
+import { dynamicStore } from '../api/dynamicStore';
 import { useAuth } from '../context/AuthContext';
-import { Plus, Search, RefreshCw, Filter, Sparkles, X, ChevronRight } from 'lucide-react';
+import { Plus, Search, RefreshCw, Filter, Sparkles, X, ChevronRight, Trash2, Edit3, Eye } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const STATUS_BADGES = {
@@ -15,28 +16,41 @@ const BREEDS = ['GIR','SAHIWAL','RED_SINDHI','THARPARKAR','RATHI','HARIANA','HF'
 
 export default function Herd() {
   const { user } = useAuth();
-  const [cows, setCows]           = useState([]);
-  const [loading, setLoading]     = useState(true);
-  const [search, setSearch]       = useState('');
+  const [cows, setCows]                   = useState([]);
+  const [loading, setLoading]             = useState(true);
+  const [search, setSearch]               = useState('');
   const [selectedBreed, setSelectedBreed] = useState('ALL');
-  const [showAdd, setShowAdd]     = useState(false);
-  const [newCow, setNewCow]       = useState({ tagNumber: '', breed: 'GIR', status: 'ACTIVE', farmerId: user?.farmerId });
+  const [selectedStatus, setSelectedStatus] = useState('ALL');
+  
+  // Modals
+  const [showAdd, setShowAdd]             = useState(false);
+  const [viewCow, setViewCow]             = useState(null);
+  const [editStatusCow, setEditStatusCow] = useState(null);
+
+  const [newCow, setNewCow]               = useState({
+    tagNumber: '', breed: 'GIR', status: 'ACTIVE', lactationCount: 1, currentMilkYieldLitres: 14.0, farmerId: user?.farmerId || 1
+  });
 
   const loadCows = () => {
     setLoading(true);
-    const req = user?.farmerId ? cowApi.getByFarmer(user.farmerId) : cowApi.getAll({ page: 0, size: 50 });
-    req.then(r => setCows(r.data.data?.content || r.data.data || []))
-       .catch(() => setCows([]))
-       .finally(() => setLoading(false));
+    cowApi.getAll()
+      .then(r => setCows(r.data?.data || dynamicStore.getCows()))
+      .catch(() => setCows(dynamicStore.getCows()))
+      .finally(() => setLoading(false));
   };
 
-  useEffect(loadCows, []);
+  useEffect(() => {
+    loadCows();
+    const unsubscribe = dynamicStore.subscribe(() => loadCows());
+    return () => unsubscribe();
+  }, [user]);
 
   const filtered = cows.filter(c => {
     const matchesSearch = c.tagNumber?.toLowerCase().includes(search.toLowerCase()) ||
                           c.breed?.toLowerCase().includes(search.toLowerCase());
     const matchesBreed  = selectedBreed === 'ALL' || c.breed === selectedBreed;
-    return matchesSearch && matchesBreed;
+    const matchesStatus = selectedStatus === 'ALL' || c.status === selectedStatus;
+    return matchesSearch && matchesBreed && matchesStatus;
   });
 
   const handleAddCow = async (e) => {
@@ -45,9 +59,25 @@ export default function Herd() {
       await cowApi.create(newCow);
       toast.success('New cattle ear-tag registered successfully! 🐄');
       setShowAdd(false);
+      setNewCow({ tagNumber: '', breed: 'GIR', status: 'ACTIVE', lactationCount: 1, currentMilkYieldLitres: 14.0, farmerId: user?.farmerId || 1 });
       loadCows();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to register cattle');
+      toast.error('Failed to register cattle');
+    }
+  };
+
+  const handleUpdateStatus = (cowId, status) => {
+    dynamicStore.updateCowStatus(cowId, status);
+    toast.success(`Cattle status updated to ${status}! 🏷️`);
+    setEditStatusCow(null);
+    loadCows();
+  };
+
+  const handleDeleteCow = (cowId, tag) => {
+    if (window.confirm(`Are you sure you want to remove cattle ear tag ${tag}?`)) {
+      dynamicStore.deleteCow(cowId);
+      toast.success(`Cattle tag ${tag} removed from directory.`);
+      loadCows();
     }
   };
 
@@ -58,14 +88,14 @@ export default function Herd() {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
             <span className="badge badge-emerald">
-              <Sparkles size={11} /> Registered Cattle Directory
+              <Sparkles size={11} /> Live Cattle Directory
             </span>
           </div>
           <h1 style={{ fontSize: 28, fontWeight: 800 }}>
             Herd Ear-Tag Profiles ({cows.length})
           </h1>
           <p style={{ fontSize: 14.5, color: 'var(--color-husk-tan)', marginTop: 2 }}>
-            Field-tested cattle ear-tag tracking, lactation status, and yield history.
+            Field-tested cattle ear-tag tracking, lactation status, and dynamic yield history.
           </p>
         </div>
 
@@ -82,7 +112,7 @@ export default function Herd() {
       {/* Filter & Search Toolbar */}
       <div className="glass-card" style={{ padding: '16px 20px', marginBottom: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-          <div className="input-wrapper" style={{ width: 380 }}>
+          <div className="input-wrapper" style={{ width: 340 }}>
             <Search size={16} className="input-icon" style={{ color: 'var(--color-marigold)' }} />
             <input
               type="text" className="input input-with-icon font-mono-tabular"
@@ -92,16 +122,30 @@ export default function Herd() {
             />
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Filter size={15} style={{ color: 'var(--color-husk-tan)' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Filter size={14} style={{ color: 'var(--color-husk-tan)' }} />
+              <select
+                className="select"
+                value={selectedBreed}
+                onChange={e => setSelectedBreed(e.target.value)}
+                style={{ width: 170, height: 38, borderRadius: 'var(--radius-pill)', fontSize: 13 }}
+              >
+                <option value="ALL">All Breeds ({cows.length})</option>
+                {BREEDS.map(b => <option key={b} value={b}>{b.replace(/_/g, ' ')}</option>)}
+              </select>
+            </div>
+
             <select
               className="select"
-              value={selectedBreed}
-              onChange={e => setSelectedBreed(e.target.value)}
-              style={{ width: 200, height: 40, borderRadius: 'var(--radius-pill)' }}
+              value={selectedStatus}
+              onChange={e => setSelectedStatus(e.target.value)}
+              style={{ width: 150, height: 38, borderRadius: 'var(--radius-pill)', fontSize: 13 }}
             >
-              <option value="ALL">All Breeds ({cows.length})</option>
-              {BREEDS.map(b => <option key={b} value={b}>{b.replace(/_/g, ' ')}</option>)}
+              <option value="ALL">All Statuses</option>
+              <option value="ACTIVE">ACTIVE</option>
+              <option value="DRY">DRY</option>
+              <option value="SOLD">SOLD</option>
             </select>
           </div>
         </div>
@@ -117,7 +161,7 @@ export default function Herd() {
               <th>Lactation Status</th>
               <th>Lactation Count</th>
               <th>Current Daily Yield</th>
-              <th>Date of Birth</th>
+              <th>Expected Calving</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -142,7 +186,7 @@ export default function Herd() {
               filtered.map(cow => (
                 <tr key={cow.id}>
                   <td className="mono-col">
-                    <div className="ear-tag-badge">
+                    <div className="ear-tag-badge" style={{ cursor: 'pointer' }} onClick={() => setViewCow(cow)}>
                       <span className="ear-tag-rivet" />
                       {cow.tagNumber}
                     </div>
@@ -153,12 +197,13 @@ export default function Herd() {
                     </span>
                   </td>
                   <td>
-                    <span className={`badge ${STATUS_BADGES[cow.status] || 'badge-muted'}`}>
-                      {cow.status}
+                    <span className={`badge ${STATUS_BADGES[cow.status] || 'badge-muted'}`}
+                      style={{ cursor: 'pointer' }} onClick={() => setEditStatusCow(cow)} title="Click to update status">
+                      {cow.status} ✏️
                     </span>
                   </td>
                   <td className="mono-col">
-                    {cow.lactationCount ?? '—'}
+                    {cow.lactationCount ?? 1}
                   </td>
                   <td className="mono-col">
                     {cow.currentMilkYieldLitres ? (
@@ -166,17 +211,23 @@ export default function Herd() {
                         {cow.currentMilkYieldLitres} L/day
                       </span>
                     ) : (
-                      <span style={{ color: 'var(--color-text-muted)' }}>—</span>
+                      <span style={{ color: 'var(--color-text-muted)' }}>0 L/day</span>
                     )}
                   </td>
                   <td className="mono-col" style={{ color: 'var(--color-husk-tan)', fontSize: 13.5 }}>
-                    {cow.dateOfBirth || '—'}
+                    {cow.expectedCalvingDate || 'Not gestating'}
                   </td>
                   <td>
-                    <button className="btn btn-ghost" style={{ fontSize: 12.5, padding: '4px 10px' }}
-                      onClick={() => toast(`Viewing AI history for ${cow.tagNumber}`, { icon: '🧬' })}>
-                      AI History <ChevronRight size={13} />
-                    </button>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button className="btn btn-ghost" style={{ fontSize: 12.5, padding: '4px 8px' }}
+                        onClick={() => setViewCow(cow)}>
+                        <Eye size={13} /> View Profile
+                      </button>
+                      <button className="btn btn-ghost" style={{ fontSize: 12.5, padding: '4px 8px', color: 'var(--color-status-mismatch)' }}
+                        onClick={() => handleDeleteCow(cow.id, cow.tagNumber)}>
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -184,6 +235,66 @@ export default function Herd() {
           </tbody>
         </table>
       </div>
+
+      {/* View Cow Profile Modal */}
+      {viewCow && (
+        <div className="pro-modal-backdrop" onClick={() => setViewCow(null)}>
+          <div className="pro-modal-content" style={{ maxWidth: 500 }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div className="ear-tag-badge" style={{ fontSize: 18 }}>
+                  <span className="ear-tag-rivet" />
+                  {viewCow.tagNumber}
+                </div>
+                <span className={`badge ${STATUS_BADGES[viewCow.status] || 'badge-muted'}`}>{viewCow.status}</span>
+              </div>
+              <button className="btn btn-ghost btn-icon" onClick={() => setViewCow(null)}><X size={18} /></button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ padding: 16, background: 'var(--color-surface-alt)', borderRadius: 12, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div><span style={{ fontSize: 12, color: 'var(--color-husk-tan)' }}>Breed Standard:</span><div style={{ fontWeight: 800 }}>{viewCow.breed?.replace(/_/g, ' ')}</div></div>
+                <div><span style={{ fontSize: 12, color: 'var(--color-husk-tan)' }}>Daily Yield:</span><div className="font-mono-tabular" style={{ fontWeight: 800, color: 'var(--color-marigold)' }}>{viewCow.currentMilkYieldLitres || 12} L/day</div></div>
+                <div><span style={{ fontSize: 12, color: 'var(--color-husk-tan)' }}>Lactation Count:</span><div className="font-mono-tabular" style={{ fontWeight: 800 }}>{viewCow.lactationCount || 1}</div></div>
+                <div><span style={{ fontSize: 12, color: 'var(--color-husk-tan)' }}>Date of Birth:</span><div className="font-mono-tabular">{viewCow.dateOfBirth || '2021-04-10'}</div></div>
+              </div>
+
+              <div style={{ padding: 14, background: 'rgba(78, 122, 81, 0.15)', borderRadius: 12, border: '1px solid #72b276' }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#72b276' }}>BREEDING & GESTATION STATUS</div>
+                <div style={{ fontSize: 13.5, color: 'var(--color-dairy-white)', marginTop: 4 }}>
+                  Last Inseminated: <strong>{viewCow.lastInseminationDate || '2026-06-10'}</strong>
+                </div>
+                <div style={{ fontSize: 13.5, color: 'var(--color-marigold)', marginTop: 2 }}>
+                  Expected Calving Date: <strong>{viewCow.expectedCalvingDate || '2027-03-18'}</strong>
+                </div>
+              </div>
+
+              <button className="btn btn-accent" style={{ width: '100%', marginTop: 8 }}
+                onClick={() => setViewCow(null)}>
+                Close Profile
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Status Modal */}
+      {editStatusCow && (
+        <div className="pro-modal-backdrop" onClick={() => setEditStatusCow(null)}>
+          <div className="pro-modal-content" style={{ maxWidth: 400 }} onClick={e => e.stopPropagation()}>
+            <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 16 }}>🏷️ Update Status for {editStatusCow.tagNumber}</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+              {['ACTIVE', 'DRY', 'SOLD', 'DECEASED'].map(st => (
+                <button key={st} className={`btn ${editStatusCow.status === st ? 'btn-accent' : 'btn-secondary'}`}
+                  onClick={() => handleUpdateStatus(editStatusCow.id, st)} style={{ justifyContent: 'center' }}>
+                  Set Status: {st}
+                </button>
+              ))}
+            </div>
+            <button className="btn btn-ghost" style={{ width: '100%' }} onClick={() => setEditStatusCow(null)}>Cancel</button>
+          </div>
+        </div>
+      )}
 
       {/* Add Cow Modal */}
       {showAdd && (
@@ -199,7 +310,7 @@ export default function Herd() {
             <form onSubmit={handleAddCow} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div className="form-group">
                 <label className="form-label">Ear Tag ID / Number *</label>
-                <input className="input font-mono-tabular" placeholder="e.g. TN-GJ-001" required
+                <input className="input font-mono-tabular" placeholder="e.g. TN-GJ-008" required
                   value={newCow.tagNumber} onChange={e => setNewCow(p => ({ ...p, tagNumber: e.target.value }))} />
               </div>
 
@@ -211,12 +322,20 @@ export default function Herd() {
                 </select>
               </div>
 
-              <div className="form-group">
-                <label className="form-label">Initial Lactation Status</label>
-                <select className="select" value={newCow.status}
-                  onChange={e => setNewCow(p => ({ ...p, status: e.target.value }))}>
-                  {['ACTIVE','DRY','SOLD','DECEASED'].map(s => <option key={s}>{s}</option>)}
-                </select>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div className="form-group">
+                  <label className="form-label">Initial Lactation Status</label>
+                  <select className="select" value={newCow.status}
+                    onChange={e => setNewCow(p => ({ ...p, status: e.target.value }))}>
+                    {['ACTIVE','DRY','SOLD'].map(s => <option key={s}>{s}</option>)}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Current Daily Yield (L/day)</label>
+                  <input type="number" step="0.5" className="input font-mono-tabular" value={newCow.currentMilkYieldLitres}
+                    onChange={e => setNewCow(p => ({ ...p, currentMilkYieldLitres: Number(e.target.value) }))} />
+                </div>
               </div>
 
               <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>

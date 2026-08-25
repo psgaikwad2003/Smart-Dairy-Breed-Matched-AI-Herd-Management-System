@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { notifApi } from '../api/client';
+import { dynamicStore } from '../api/dynamicStore';
 import { Bell, Check, CheckCheck, RefreshCw, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -28,32 +29,30 @@ const ALERT_ICONS = {
 export default function Alerts() {
   const [alerts, setAlerts]       = useState([]);
   const [loading, setLoading]     = useState(true);
-  const [page, setPage]           = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
 
-  const loadAlerts = useCallback((p = 0) => {
+  const loadAlerts = useCallback(() => {
     setLoading(true);
-    notifApi.getAll({ page: p, size: 20 })
-      .then(r => {
-        const data = r.data.data;
-        setAlerts(data?.content || []);
-        setTotalPages(data?.totalPages || 1);
-      })
-      .catch(() => setAlerts([]))
+    notifApi.getAll()
+      .then(r => setAlerts(r.data?.data || dynamicStore.getNotifications()))
+      .catch(() => setAlerts(dynamicStore.getNotifications()))
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => { loadAlerts(page); }, [page]);
+  useEffect(() => {
+    loadAlerts();
+    const unsubscribe = dynamicStore.subscribe(() => loadAlerts());
+    return () => unsubscribe();
+  }, [loadAlerts]);
 
   const markRead = async (id) => {
     await notifApi.markRead(id);
-    setAlerts(prev => prev.map(a => a.id === id ? { ...a, readStatus: true } : a));
+    loadAlerts();
   };
 
   const markAllRead = async () => {
     await notifApi.markAllRead();
-    setAlerts(prev => prev.map(a => ({ ...a, readStatus: true })));
     toast.success('All notifications marked as read! 🔔');
+    loadAlerts();
   };
 
   const unreadCount = alerts.filter(a => !a.readStatus).length;
@@ -82,7 +81,7 @@ export default function Alerts() {
           </div>
 
           <div style={{ display: 'flex', gap: 10 }}>
-            <button className="btn btn-secondary" onClick={() => loadAlerts(page)} style={{ borderRadius: 'var(--radius-pill)' }}>
+            <button className="btn btn-secondary" onClick={loadAlerts} style={{ borderRadius: 'var(--radius-pill)' }}>
               <RefreshCw size={14} /> Refresh
             </button>
             {unreadCount > 0 && (
@@ -144,16 +143,6 @@ export default function Alerts() {
           ))
         )}
       </div>
-
-      {totalPages > 1 && (
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginTop: 28 }}>
-          <button className="btn btn-secondary" disabled={page === 0} onClick={() => setPage(p => p-1)}>← Previous</button>
-          <span style={{ display: 'flex', alignItems: 'center', fontSize: 13, color: 'var(--color-text-muted)', padding: '0 12px' }}>
-            Page {page+1} of {totalPages}
-          </span>
-          <button className="btn btn-secondary" disabled={page >= totalPages-1} onClick={() => setPage(p => p+1)}>Next →</button>
-        </div>
-      )}
     </div>
   );
 }

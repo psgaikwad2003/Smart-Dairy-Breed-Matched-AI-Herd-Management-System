@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { cowApi, milkApi, bullApi } from '../api/client';
+import { dynamicStore } from '../api/dynamicStore';
 import { useAuth } from '../context/AuthContext';
-import { Sparkles, PieChart as PieIcon, TrendingUp, Lightbulb, Dna, CheckCircle2 } from 'lucide-react';
+import { Sparkles, PieChart as PieIcon, TrendingUp, Lightbulb, Dna } from 'lucide-react';
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
@@ -16,29 +17,39 @@ export default function Analytics() {
   const [bullPerf, setBullPerf]       = useState([]);
   const [loading, setLoading]         = useState(true);
 
-  useEffect(() => {
+  const loadAnalytics = () => {
     const farmerId = user?.farmerId || 1;
 
     Promise.all([
       cowApi.getBreedDist(farmerId),
       milkApi.getBreedComp(farmerId),
-      bullApi.getPerformance().catch(() => ({ data: { data: [] } })),
+      bullApi.getPerformance(),
     ]).then(([bd, bc, bp]) => {
-      setBreedDist((bd.data.data || []).map(r => ({
+      const distData = bd.data?.data || dynamicStore.getBreedComparison();
+      setBreedDist(distData.map(r => ({
         name: String(r[0] || '').replace(/_/g, ' '),
         value: Number(r[1] || 0),
       })));
-      setYieldTrend((bc.data.data || []).map(r => ({
+
+      const trendData = bc.data?.data || dynamicStore.getBreedComparison();
+      setYieldTrend(trendData.map(r => ({
         breed: String(r[0] || '').replace(/_/g, ' '),
         avgLitres: Number(Number(r[1] || 0).toFixed(2)),
       })));
+
       setBullPerf(bp.data?.data || []);
     }).finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadAnalytics();
+    const unsubscribe = dynamicStore.subscribe(() => loadAnalytics());
+    return () => unsubscribe();
   }, [user]);
 
   const topBreed = yieldTrend.length > 0
     ? yieldTrend.reduce((a,b) => a.avgLitres > b.avgLitres ? a : b).breed
-    : 'Holstein Friesian';
+    : 'Gir Standard';
 
   return (
     <div className="fade-in">

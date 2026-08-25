@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Settings as SettingsIcon, ShieldCheck, Bell, Dna, Save, RefreshCw } from 'lucide-react';
+import { dynamicStore } from '../api/dynamicStore';
+import { Settings as SettingsIcon, ShieldCheck, Bell, Dna, Save, RefreshCw, RotateCcw } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function Settings() {
@@ -18,6 +19,13 @@ export default function Settings() {
   const handleSave = (e) => {
     e.preventDefault();
     toast.success('System preferences and breeding AI guardrails saved successfully! ⚙️');
+  };
+
+  const handleResetData = () => {
+    if (window.confirm('Reset all dynamic local data back to initial sample state?')) {
+      dynamicStore.resetToDefault();
+      toast.success('Dynamic store restored to default initial dataset! 🔄');
+    }
   };
 
   return (
@@ -90,11 +98,11 @@ export default function Settings() {
           </div>
         </div>
 
-        {/* Section 3: Notification Toggles */}
+        {/* Section 3: Notification Toggles & Data Store Reset */}
         <div className="glass-card">
           <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
             <Bell size={18} style={{ color: 'var(--color-marigold)' }} />
-            Real-Time Field Notifications
+            Real-Time Field Notifications & Data Engine
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'rgba(251,247,238,0.03)', borderRadius: 10, cursor: 'pointer' }}>
@@ -112,6 +120,16 @@ export default function Settings() {
               </div>
               <input type="checkbox" checked={profile.a2a2Preference} onChange={e => setProfile(p => ({ ...p, a2a2Preference: e.target.checked }))} style={{ accentColor: 'var(--color-marigold)', width: 18, height: 18 }} />
             </label>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'rgba(255,255,255,0.025)', borderRadius: 10, border: '1px solid var(--color-border)', marginTop: 8 }}>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--color-dairy-white)' }}>Restore Default Demo Data Engine</div>
+                <div style={{ fontSize: 12, color: 'var(--color-husk-tan)' }}>Resets all locally added cows, straws, milk logs, and breeding events back to factory defaults.</div>
+              </div>
+              <button type="button" className="btn btn-secondary" onClick={handleResetData} style={{ fontSize: 13, padding: '8px 14px' }}>
+                <RotateCcw size={14} /> Reset Local Data
+              </button>
+            </div>
           </div>
         </div>
 

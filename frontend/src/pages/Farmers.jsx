@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { farmerApi } from '../api/client';
-import { Users, Plus, Phone, MapPin, Search, RefreshCw, X, ShieldCheck } from 'lucide-react';
+import { dynamicStore } from '../api/dynamicStore';
+import { Users, Plus, Phone, MapPin, Search, RefreshCw, X, ShieldCheck, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function Farmers() {
@@ -15,12 +16,16 @@ export default function Farmers() {
   const loadFarmers = () => {
     setLoading(true);
     farmerApi.getAll()
-      .then(r => setFarmers(r.data.data || []))
-      .catch(() => setFarmers([]))
+      .then(r => setFarmers(r.data?.data || dynamicStore.getFarmers()))
+      .catch(() => setFarmers(dynamicStore.getFarmers()))
       .finally(() => setLoading(false));
   };
 
-  useEffect(loadFarmers, []);
+  useEffect(() => {
+    loadFarmers();
+    const unsubscribe = dynamicStore.subscribe(() => loadFarmers());
+    return () => unsubscribe();
+  }, []);
 
   const handleAdd = async (e) => {
     e.preventDefault();
@@ -31,7 +36,7 @@ export default function Farmers() {
       setNewFarmer({ name: '', phone: '', address: '', village: '', district: '', state: 'Gujarat' });
       loadFarmers();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to register farmer');
+      toast.error('Failed to register farmer');
     }
   };
 

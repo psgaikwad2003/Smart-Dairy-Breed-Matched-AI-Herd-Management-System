@@ -1,53 +1,79 @@
 import { useState, useEffect } from 'react';
-import { cowApi, breedingApi } from '../api/client';
-import { Sparkles, Calendar, ShieldAlert, CheckCircle2, AlertTriangle, Syringe, Clock, Plus } from 'lucide-react';
+import { cowApi } from '../api/client';
+import { dynamicStore } from '../api/dynamicStore';
+import { useAuth } from '../context/AuthContext';
+import { Sparkles, Calendar, ShieldAlert, CheckCircle2, AlertTriangle, Syringe, Clock, Plus, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function HealthTracker() {
+  const { user }                    = useAuth();
   const [cows, setCows]             = useState([]);
   const [loading, setLoading]       = useState(true);
   const [selectedCowId, setSelectedCowId] = useState('');
+  const [vaccinations, setVaccinations]   = useState([]);
+  const [showAdd, setShowAdd]             = useState(false);
+  const [newLog, setNewLog]               = useState({
+    cowTag: 'TN-GJ-001', vaccineName: '', dueDate: new Date().toISOString().split('T')[0], type: 'VACCINE'
+  });
 
-  // Sample vaccination & heat tracking schedule
-  const [vaccinations, setVaccinations] = useState([
-    { id: 1, cowTag: 'TN-GJ-001', vaccineName: 'FMD (Foot & Mouth Disease)', dueDate: '2026-09-05', status: 'DUE' },
-    { id: 2, cowTag: 'TN-GJ-002', vaccineName: 'HS (Hemorrhagic Septicemia)', dueDate: '2026-09-12', status: 'DUE' },
-    { id: 3, cowTag: 'TN-GJ-003', vaccineName: 'Deworming (Albendazole)', dueDate: '2026-08-20', status: 'DONE' },
-  ]);
+  const loadData = () => {
+    cowApi.getAll().then(r => {
+      const list = r.data?.data || dynamicStore.getCows();
+      setCows(list);
+      if (list.length > 0 && !selectedCowId) {
+        setSelectedCowId(String(list[0].id));
+        setNewLog(p => ({ ...p, cowTag: list[0].tagNumber }));
+      }
+    }).catch(() => setCows(dynamicStore.getCows())).finally(() => setLoading(false));
+
+    setVaccinations(dynamicStore.getHealthLogs());
+  };
 
   useEffect(() => {
-    cowApi.getAll({ page: 0, size: 50 }).then(r => {
-      const list = r.data.data?.content || r.data.data || [];
-      setCows(list);
-      if (list.length > 0) setSelectedCowId(String(list[0].id));
-    }).catch(() => {}).finally(() => setLoading(false));
-  }, []);
+    loadData();
+    const unsubscribe = dynamicStore.subscribe(() => loadData());
+    return () => unsubscribe();
+  }, [user]);
 
   const handleMarkVaccinated = (id) => {
-    setVaccinations(prev => prev.map(v => v.id === id ? { ...v, status: 'DONE' } : v));
+    dynamicStore.markVaccinated(id);
     toast.success('Vaccination recorded successfully! 💉');
+    loadData();
+  };
+
+  const handleAddLog = (e) => {
+    e.preventDefault();
+    dynamicStore.addHealthLog(newLog);
+    toast.success('Health & vaccine schedule event added! 🗓️');
+    setShowAdd(false);
+    loadData();
   };
 
   const activeCow = cows.find(c => String(c.id) === String(selectedCowId));
 
-  // Compute 21-day heat cycle prediction
   const today = new Date();
   const nextHeatDate = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-  const optimalWindowStart = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000);
-  const optimalWindowEnd = new Date(today.getTime() + 15 * 24 * 60 * 60 * 1000);
 
   return (
     <div className="fade-in" style={{ maxWidth: 1000, margin: '0 auto' }}>
       <div className="page-header" style={{ marginBottom: 24 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-          <span className="badge badge-emerald">
-            <Sparkles size={11} /> Reproductive Health Advisory
-          </span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+              <span className="badge badge-emerald">
+                <Sparkles size={11} /> Reproductive Health Advisory
+              </span>
+            </div>
+            <h1 style={{ fontSize: 28, fontWeight: 800 }}>Heat Cycle & Vaccination Tracker</h1>
+            <p style={{ fontSize: 14.5, color: 'var(--color-husk-tan)', marginTop: 2 }}>
+              Predict 21-day cattle estrus heat cycles to optimize insemination timing and manage disease vaccination calendars.
+            </p>
+          </div>
+
+          <button className="btn btn-accent" onClick={() => setShowAdd(true)} style={{ borderRadius: 'var(--radius-pill)' }}>
+            <Plus size={16} /> Schedule Vaccine Event
+          </button>
         </div>
-        <h1 style={{ fontSize: 28, fontWeight: 800 }}>Heat Cycle & Vaccination Tracker</h1>
-        <p style={{ fontSize: 14.5, color: 'var(--color-husk-tan)', marginTop: 2 }}>
-          Predict 21-day cattle estrus heat cycles to optimize insemination timing and manage disease vaccination calendars.
-        </p>
       </div>
 
       <div className="grid-2" style={{ marginBottom: 28 }}>
@@ -167,6 +193,38 @@ export default function HealthTracker() {
           </tbody>
         </table>
       </div>
+
+      {/* Add Vaccine Modal */}
+      {showAdd && (
+        <div className="pro-modal-backdrop" onClick={() => setShowAdd(false)}>
+          <div className="pro-modal-content" style={{ maxWidth: 450 }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+              <h2 style={{ fontSize: 20, fontWeight: 800 }}>💉 Schedule Vaccine / Deworming</h2>
+              <button className="btn btn-ghost btn-icon" onClick={() => setShowAdd(false)}><X size={18} /></button>
+            </div>
+            <form onSubmit={handleAddLog} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div className="form-group">
+                <label className="form-label">Cattle Tag</label>
+                <select className="select font-mono-tabular" value={newLog.cowTag} onChange={e => setNewLog(p => ({ ...p, cowTag: e.target.value }))}>
+                  {cows.map(c => <option key={c.id} value={c.tagNumber}>{c.tagNumber} ({c.breed?.replace(/_/g, ' ')})</option>)}
+                </select>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Vaccine / Treatment Name *</label>
+                <input className="input" placeholder="e.g. FMD Booster Dose 2" required value={newLog.vaccineName} onChange={e => setNewLog(p => ({ ...p, vaccineName: e.target.value }))} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Due Date *</label>
+                <input type="date" className="input font-mono-tabular" required value={newLog.dueDate} onChange={e => setNewLog(p => ({ ...p, dueDate: e.target.value }))} />
+              </div>
+              <div style={{ display: 'flex', gap: 12, marginTop: 10 }}>
+                <button type="button" className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setShowAdd(false)}>Cancel</button>
+                <button type="submit" className="btn btn-accent" style={{ flex: 1 }}>Save Event</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

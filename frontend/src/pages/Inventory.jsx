@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { inventoryApi } from '../api/client';
+import { dynamicStore } from '../api/dynamicStore';
 import { Plus, PackageOpen, AlertTriangle, RefreshCw, Sparkles, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -20,12 +21,16 @@ export default function Inventory() {
   const loadStraws = () => {
     setLoading(true);
     inventoryApi.getStraws()
-      .then(r => setStraws(r.data.data || []))
-      .catch(() => setStraws([]))
+      .then(r => setStraws(r.data?.data || dynamicStore.getStraws()))
+      .catch(() => setStraws(dynamicStore.getStraws()))
       .finally(() => setLoading(false));
   };
 
-  useEffect(loadStraws, []);
+  useEffect(() => {
+    loadStraws();
+    const unsubscribe = dynamicStore.subscribe(() => loadStraws());
+    return () => unsubscribe();
+  }, []);
 
   const handleAdd = async (e) => {
     e.preventDefault();
@@ -35,7 +40,7 @@ export default function Inventory() {
       setShowAdd(false);
       loadStraws();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to add straw batch');
+      toast.error('Failed to add straw batch');
     }
   };
 
@@ -46,7 +51,7 @@ export default function Inventory() {
       setRestockId(null);
       loadStraws();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Restock action failed');
+      toast.error('Restock action failed');
     }
   };
 
@@ -123,7 +128,6 @@ export default function Inventory() {
             ) : straws.map(s => {
               const isFull  = s.stockQty > 10;
               const isHalf  = s.stockQty > 0 && s.stockQty <= 10;
-              const isEmpty = s.stockQty === 0;
 
               return (
                 <tr key={s.id}>
