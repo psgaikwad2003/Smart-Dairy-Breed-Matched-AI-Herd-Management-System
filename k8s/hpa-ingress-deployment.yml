@@ -1,0 +1,51 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: smart-dairy-ingress
+  namespace: smart-dairy
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  tls:
+    - hosts:
+        - app.smartdairy.org
+      secretName: smart-dairy-tls
+  rules:
+    - host: app.smartdairy.org
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: smart-dairy-backend-service
+                port:
+                  number: 8081
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: smart-dairy-frontend-service
+                port:
+                  number: 80
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: smart-dairy-backend-hpa
+  namespace: smart-dairy
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: smart-dairy-backend
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 75
