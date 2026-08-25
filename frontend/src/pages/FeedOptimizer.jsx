@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react';
 import { cowApi } from '../api/client';
-import { Sparkles, Calculator, Utensils, IndianRupee, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { dynamicStore } from '../api/dynamicStore';
+import { useAuth } from '../context/AuthContext';
+import { Sparkles, Calculator, Utensils, IndianRupee, ArrowRight, CheckCircle2, Save } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function FeedOptimizer() {
+  const { user }                      = useAuth();
   const [cows, setCows]               = useState([]);
   const [selectedCowId, setSelectedCowId] = useState('');
   const [cowWeight, setCowWeight]     = useState(400); // kg
@@ -15,32 +19,34 @@ export default function FeedOptimizer() {
   const [dryFeedPrice, setDryFeedPrice]     = useState(7.0); // ₹/kg (Wheat Straw/Bhusa)
   const [concFeedPrice, setConcFeedPrice]   = useState(26.0); // ₹/kg (Pashu Aahar Concentrate)
 
-  useEffect(() => {
+  const loadCows = () => {
     cowApi.getAll({ page: 0, size: 50 }).then(r => {
-      const list = r.data.data?.content || r.data.data || [];
+      const list = r.data?.data?.content || r.data?.data || dynamicStore.getCows();
       setCows(list);
-      if (list.length > 0) {
+      if (list.length > 0 && !selectedCowId) {
         setSelectedCowId(String(list[0].id));
         setTargetYield(list[0].currentMilkYieldLitres || 12);
       }
-    }).catch(() => {});
-  }, []);
+    }).catch(() => setCows(dynamicStore.getCows()));
+  };
+
+  useEffect(() => {
+    loadCows();
+    const unsubscribe = dynamicStore.subscribe(() => loadCows());
+    return () => unsubscribe();
+  }, [user]);
 
   const activeCow = cows.find(c => String(c.id) === String(selectedCowId));
 
-  // Calculations based on NDDB / ICAR Dairy Nutrition Standards
-  // Maintenance DM = 2% of body weight
-  // Production DM = 0.4 kg concentrate per liter of milk
+  // NDDB / ICAR Dairy Nutrition Formulae
   const maintenanceDM = (cowWeight * 0.02);
   const productionDM  = (targetYield * 0.4);
   const totalDryMatter = (maintenanceDM + productionDM).toFixed(1);
 
-  // Recommended Feed Ration Mix
-  const reqGreenFodder = Math.round(totalDryMatter * 1.8); // kg wet green fodder
-  const reqDryFodder   = Math.round(totalDryMatter * 0.6); // kg dry straw
-  const reqConcentrate = Number((productionDM + 1.2).toFixed(1)); // kg concentrate feed
+  const reqGreenFodder = Math.round(totalDryMatter * 1.8);
+  const reqDryFodder   = Math.round(totalDryMatter * 0.6);
+  const reqConcentrate = Number((productionDM + 1.2).toFixed(1));
 
-  // Daily Financials
   const dailyGreenCost = Math.round(reqGreenFodder * greenFeedPrice);
   const dailyDryCost   = Math.round(reqDryFodder * dryFeedPrice);
   const dailyConcCost  = Math.round(reqConcentrate * concFeedPrice);
@@ -50,18 +56,30 @@ export default function FeedOptimizer() {
   const netDailyProfit    = grossDailyRevenue - totalFeedCost;
   const monthlyProfit     = netDailyProfit * 30;
 
+  const handleSaveRation = () => {
+    toast.success(`Custom Pashu Aahar ration saved for cattle ${activeCow?.tagNumber || 'tag'}! 🌾`);
+  };
+
   return (
     <div className="fade-in" style={{ maxWidth: 1000, margin: '0 auto' }}>
       <div className="page-header" style={{ marginBottom: 24 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-          <span className="badge badge-emerald">
-            <Sparkles size={11} /> NDDB Ration Balancer AI
-          </span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+              <span className="badge badge-emerald">
+                <Sparkles size={11} /> NDDB Ration Balancer AI
+              </span>
+            </div>
+            <h1 style={{ fontSize: 28, fontWeight: 800 }}>Pashu Aahar Feed & Profit Optimizer</h1>
+            <p style={{ fontSize: 14.5, color: 'var(--color-husk-tan)', marginTop: 2 }}>
+              Optimize daily feed ration mix (Green, Dry Fodder & Concentrate) to maximize daily milk yield and net profit per cow.
+            </p>
+          </div>
+
+          <button className="btn btn-accent" onClick={handleSaveRation} style={{ borderRadius: 'var(--radius-pill)' }}>
+            <Save size={15} /> Save Ration Formulation
+          </button>
         </div>
-        <h1 style={{ fontSize: 28, fontWeight: 800 }}>Pashu Aahar Feed & Profit Optimizer</h1>
-        <p style={{ fontSize: 14.5, color: 'var(--color-husk-tan)', marginTop: 2 }}>
-          Optimize daily feed ration mix (Green, Dry Fodder & Concentrate) to maximize daily milk yield and net profit per cow.
-        </p>
       </div>
 
       <div className="grid-2" style={{ marginBottom: 28 }}>

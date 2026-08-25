@@ -1,22 +1,34 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Search, Bell, Plus, CheckCircle2 } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
+import { exportHerdRegisterCSV } from '../utils/exportUtils';
+import { dynamicStore } from '../api/dynamicStore';
+import { Search, Bell, Plus, CheckCircle2, Sun, Moon, Download, Globe } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 export default function TopBar({ unreadCount }) {
   const { user } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  const [lang, setLang] = useState('en');
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) navigate(`/herd?search=${encodeURIComponent(searchQuery)}`);
   };
 
+  const handleQuickExport = () => {
+    const cows = dynamicStore.getCows();
+    exportHerdRegisterCSV(cows);
+    toast.success('Exporting Herd Register CSV report... 📄');
+  };
+
   return (
     <header className="pro-topbar">
       {/* Ear-Tag Quick Search */}
-      <form onSubmit={handleSearchSubmit} style={{ width: 360 }}>
+      <form onSubmit={handleSearchSubmit} style={{ width: 340 }}>
         <div className="input-wrapper">
           <Search size={16} className="input-icon" style={{ color: 'var(--color-marigold)' }} />
           <input
@@ -36,35 +48,46 @@ export default function TopBar({ unreadCount }) {
       </form>
 
       {/* Right Action Bar */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-        {/* System Status Pill */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 7,
-          fontSize: 12.5, fontWeight: 700, color: 'var(--color-status-match)',
-          background: 'var(--color-status-match-bg)', padding: '6px 14px',
-          borderRadius: 'var(--radius-pill)', border: '1px solid rgba(37,107,42,0.3)',
-        }}>
-          <CheckCircle2 size={14} />
-          <span>System Ready</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        {/* Language Selector Dropdown */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--color-surface-alt)', padding: '4px 10px', borderRadius: 'var(--radius-pill)', border: '1.5px solid var(--color-border)' }}>
+          <Globe size={14} style={{ color: 'var(--color-marigold)' }} />
+          <select value={lang} onChange={e => setLang(e.target.value)} style={{ background: 'transparent', border: 'none', color: 'var(--color-text)', fontSize: 12.5, fontWeight: 700, cursor: 'pointer', outline: 'none' }}>
+            <option value="en" style={{ background: '#1c2b33' }}>English</option>
+            <option value="hi" style={{ background: '#1c2b33' }}>हिंदी</option>
+            <option value="gu" style={{ background: '#1c2b33' }}>ગુજરાતી</option>
+          </select>
         </div>
+
+        {/* Sunlight / Glassmorphism Theme Toggle */}
+        <button onClick={toggleTheme} style={{
+          width: 38, height: 38, borderRadius: '50%', background: 'var(--color-surface-alt)',
+          border: '1.5px solid var(--color-border)', color: 'var(--color-marigold)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+        }} title="Toggle Sunlight Field Mode">
+          {theme === 'sunlight' ? <Sun size={17} /> : <Moon size={17} />}
+        </button>
+
+        {/* Quick CSV Export */}
+        <button className="btn btn-secondary" onClick={handleQuickExport} style={{ height: 38, padding: '0 12px', fontSize: 12.5, borderRadius: 'var(--radius-pill)' }} title="Export Herd Register CSV">
+          <Download size={14} /> Export CSV
+        </button>
 
         {/* Quick Action */}
         <button className="btn btn-primary" onClick={() => navigate('/breeding')}
-          style={{ height: 38, padding: '0 16px', fontSize: 13, borderRadius: 'var(--radius-pill)' }}>
+          style={{ height: 38, padding: '0 14px', fontSize: 13, borderRadius: 'var(--radius-pill)' }}>
           <Plus size={15} /> Record Insemination
         </button>
 
         {/* Notifications */}
         <button onClick={() => navigate('/alerts')}
           style={{
-            position: 'relative', width: 40, height: 40, borderRadius: '50%',
+            position: 'relative', width: 38, height: 38, borderRadius: '50%',
             background: 'var(--color-surface-alt)', border: '1.5px solid var(--color-border)',
             color: 'var(--color-husk-tan)', display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer', transition: 'var(--transition-fast)',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-marigold)'; e.currentTarget.style.color = 'var(--color-marigold)'; }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.color = 'var(--color-husk-tan)'; }}>
-          <Bell size={18} />
+          }}>
+          <Bell size={17} />
           {unreadCount > 0 && (
             <span style={{
               position: 'absolute', top: -3, right: -3,
@@ -79,17 +102,17 @@ export default function TopBar({ unreadCount }) {
 
         {/* Profile Pill */}
         <div style={{
-          display: 'flex', alignItems: 'center', gap: 10,
-          padding: '5px 14px 5px 6px', borderRadius: 'var(--radius-pill)',
+          display: 'flex', alignItems: 'center', gap: 8,
+          padding: '4px 12px 4px 6px', borderRadius: 'var(--radius-pill)',
           background: 'var(--color-surface-alt)', border: '1.5px solid var(--color-border)',
         }}>
           <div style={{
-            width: 32, height: 32, borderRadius: '50%',
+            width: 30, height: 30, borderRadius: '50%',
             background: 'var(--color-pasture)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontWeight: 800, fontSize: 13, color: '#FFFDF7',
           }}>{(user?.fullName || 'U')[0]}</div>
-          <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--color-text)' }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text)' }}>
             {user?.fullName?.split(' ')[0] || 'User'}
           </span>
         </div>
